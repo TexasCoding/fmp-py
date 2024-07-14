@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "fmp-py"
+version = "0.1.0"
+description = ""
+authors = ["TexasCoding <jeff10278@me.com>"]
+readme = "README.md"
+packages = [{include = "fmp_py", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+requests = "^2.32.3"
+python-dotenv = "^1.0.1"
+pandas = "^2.2.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
