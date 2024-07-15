@@ -9,6 +9,7 @@ FMP_BASE_URL = "https://financialmodelingprep.com/api/"
 FMP_DAILY_HISTORY = "v3/historical-price-full/"
 FMP_INTRADAY_HISTORY = "v3/historical-chart/"
 
+
 class FmpBase:
     def __init__(self, api_key: str = FMP_API_KEY) -> None:
         self.api_key = api_key
