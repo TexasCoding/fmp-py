@@ -43,8 +43,6 @@ class FmpHistoricalData(FmpBase):
         
         self._prepare_data(data_df)
 
-        self._round_prices(data_df)
-
         return data_df.sort_values(by="date").set_index("date")
 
     ############################
@@ -77,22 +75,8 @@ class FmpHistoricalData(FmpBase):
             return pd.DataFrame()
 
         data_df = pd.DataFrame(response)
-
-        data_df["vwap"] = self._calc_vwap(data_df)
-
-        data_df = data_df.astype(
-            {
-                "date": "datetime64[ns]",
-                "open": "float",
-                "high": "float",
-                "low": "float",
-                "close": "float",
-                "volume": "int",
-                "vwap": "float",
-            }
-        )
-
-        self._round_prices(data_df)
+        
+        self._prepare_data(data_df)
 
         return data_df.sort_values(by="date").set_index("date")
 
@@ -121,6 +105,8 @@ class FmpHistoricalData(FmpBase):
                 "vwap": "float",
             }
         )
+        
+        self._round_prices(data_df)
 
         return data_df
 
