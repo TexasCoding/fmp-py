@@ -11,7 +11,12 @@ python = "^3.12"
 requests = "^2.32.3"
 python-dotenv = "^1.0.1"
 pandas = "^2.2.2"
+requests-mock = "^1.12.1"
 
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.2.2"
+pytest-mock = "^3.14.0"
 
 [build-system]
 requires = ["poetry-core"]

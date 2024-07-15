@@ -1,3 +1,5 @@
+# src/fmp_py/fmp_historical_data.py
+# Define the FmpHistoricalData class that inherits from FmpBase.
 import pandas as pd
 from fmp_py.fmp_base import FmpBase, FMP_DAILY_HISTORY, FMP_INTRADAY_HISTORY
 
@@ -29,21 +31,11 @@ class FmpHistoricalData(FmpBase):
         if not data:
             return pd.DataFrame()
 
-        data_df = pd.DataFrame(data).drop(
-            columns=[
-                "adjClose",
-                "change",
-                "changeOverTime",
-                "changePercent",
-                "label",
-                "unadjustedVolume",
-                "vwap",
-            ]
-        )
-        
-        self._prepare_data(data_df)
+        data_df = pd.DataFrame(data)
 
-        return data_df.sort_values(by="date").set_index("date")
+        data_df = self._prepare_data(data_df).sort_values(by="date").set_index("date")
+
+        return data_df[["open", "high", "low", "close", "volume", "vwap"]]
 
     ############################
     # Intraday Historical Prices
@@ -63,9 +55,7 @@ class FmpHistoricalData(FmpBase):
         Returns:
             dict: A dictionary containing the intraday historical data for the specified symbol and time interval.
         """
-
         interval_options = ["1min", "5min", "15min", "30min", "1hour", "4hour"]
-
         if interval not in interval_options:
             raise ValueError(f"Interval must be one of: {interval_options}")
 
@@ -75,8 +65,8 @@ class FmpHistoricalData(FmpBase):
             return pd.DataFrame()
 
         data_df = pd.DataFrame(response)
-        
-        self._prepare_data(data_df)
+
+        data_df = self._prepare_data(data_df)
 
         return data_df.sort_values(by="date").set_index("date")
 
@@ -105,8 +95,8 @@ class FmpHistoricalData(FmpBase):
                 "vwap": "float",
             }
         )
-        
-        self._round_prices(data_df)
+
+        data_df = self._round_prices(data_df)
 
         return data_df
 
@@ -123,21 +113,11 @@ class FmpHistoricalData(FmpBase):
         Returns:
             pd.DataFrame: The DataFrame with rounded prices.
         """
-        data_df[
-            [
-                "open",
-                "high",
-                "low",
-                "close",
-            ]
-        ] = data_df[
-            [
-                "open",
-                "high",
-                "low",
-                "close",
-            ]
-        ].round(2)
+        data_df = data_df.copy()
+
+        prices_cols = ["open", "high", "low", "close"]
+
+        data_df[prices_cols] = data_df[prices_cols].round(2)
 
         return data_df
 
