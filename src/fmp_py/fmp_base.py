@@ -8,6 +8,7 @@ FMP_API_KEY = os.getenv("FMP_API_KEY", "")
 FMP_BASE_URL = "https://financialmodelingprep.com/api/"
 FMP_DAILY_HISTORY = "v3/historical-price-full/"
 FMP_INTRADAY_HISTORY = "v3/historical-chart/"
+FMP_COMPANY_PROFILE = "v3/company/profile/"
 
 
 class FmpBase:
