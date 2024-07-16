@@ -1,5 +1,5 @@
 from fmp_py.fmp_base import FmpBase, FMP_COMPANY_PROFILE
-from fmp_py.models.company_profile import CompanyProfile
+from fmp_py.models.company_information import CompanyProfile
 
 
 class FmpCompanyInformation(FmpBase):
