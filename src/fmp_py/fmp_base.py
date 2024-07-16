@@ -9,6 +9,7 @@ FMP_BASE_URL = "https://financialmodelingprep.com/api/"
 FMP_DAILY_HISTORY = "v3/historical-price-full/"
 FMP_INTRADAY_HISTORY = "v3/historical-chart/"
 FMP_COMPANY_PROFILE = "v3/company/profile/"
+FMP_EXECUTIVE_COMPENSATION = "v4/governance/executive_compensation"
 
 
 class FmpBase:

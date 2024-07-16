@@ -1,10 +1,43 @@
-from fmp_py.fmp_base import FmpBase, FMP_COMPANY_PROFILE
+import pandas as pd
+from fmp_py.fmp_base import FmpBase, FMP_COMPANY_PROFILE, FMP_EXECUTIVE_COMPENSATION
 from fmp_py.models.company_information import CompanyProfile
 
 
 class FmpCompanyInformation(FmpBase):
     def __init__(self):
         super().__init__()
+
+    ############################
+    # Executive Compensation
+    ############################
+    def executive_compensation(self, symbol: str) -> pd.DataFrame:
+        url = f"{FMP_EXECUTIVE_COMPENSATION}?symbol={symbol}&apikey={self.api_key}"
+
+        response = self.get_request(url)
+
+        data_df = pd.DataFrame(response)
+        data_df = data_df.rename(
+            columns={
+                "companyName": "company_name",
+                "acceptedDate": "accepted_date",
+                "filingDate": "filing_date",
+                "nameAndPosition": "name_and_position",
+                "industryTitle": "industry",
+            }
+        ).astype(
+            {
+                "salary": "float",
+                "bonus": "float",
+                "stock_award": "float",
+                "incentive_plan_compensation": "float",
+                "all_other_compensation": "float",
+                "total": "float",
+                "accepted_date": "datetime64[ns]",
+                "filing_date": "datetime64[ns]",
+            }
+        )
+
+        return data_df
 
     def company_profile(self, ticker: str) -> CompanyProfile:
         """
