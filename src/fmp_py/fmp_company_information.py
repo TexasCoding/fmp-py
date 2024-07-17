@@ -10,6 +10,41 @@ class FmpCompanyInformation(FmpBase):
         super().__init__()
 
     ############################
+    # Stock Grade
+    ############################
+    def stock_grade(self, symbol: str, limit: int = 20) -> pd.DataFrame:
+        """
+        Retrieves the stock grade information for a given symbol.
+
+        Args:
+            symbol (str): The stock symbol.
+            limit (int, optional): The maximum number of grades to retrieve. Defaults to 20.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing the stock grade information, with columns renamed and data types converted.
+        """
+
+        url = f"v3/grade/{symbol}"
+        params = {"limit": limit, "apikey": self.api_key}
+        response = self.get_request(url=url, params=params)
+
+        return (
+            pd.DataFrame(response)
+            .rename(
+                columns={
+                    "gradingCompany": "grading_company",
+                    "previousGrade": "previous_grade",
+                    "newGrade": "new_grade",
+                }
+            )
+            .astype(
+                {
+                    "date": "datetime64[ns]",
+                }
+            )
+        )
+
+    ############################
     # Stock Screener
     ############################
     def stock_screener(
