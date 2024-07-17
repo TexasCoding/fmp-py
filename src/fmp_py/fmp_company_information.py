@@ -1,5 +1,7 @@
 import pandas as pd
-from fmp_py.fmp_base import FmpBase, FMP_COMPANY_PROFILE, FMP_EXECUTIVE_COMPENSATION
+from fmp_py.fmp_base import (
+    FmpBase,
+)
 from fmp_py.models.company_information import CompanyProfile
 
 
@@ -8,12 +10,182 @@ class FmpCompanyInformation(FmpBase):
         super().__init__()
 
     ############################
+    # Stock Screener
+    ############################
+    def stock_screener(
+        self,
+        market_cap_more_than: int = None,
+        market_cap_lower_than: int = None,
+        price_more_than: int = None,
+        price_lower_than: int = None,
+        beta_more_than: float = None,
+        beta_lower_than: float = None,
+        volume_more_than: int = None,
+        volume_lower_than: int = None,
+        dividend_more_than: float = None,
+        dividend_lower_than: float = None,
+        is_etf: bool = None,
+        is_fund: bool = None,
+        is_actively_trading: bool = None,
+        sector: str = None,
+        industry: str = None,
+        exchange: str = None,
+        limit: int = 1000,
+    ):
+        """
+        Retrieves a DataFrame of stock information based on the specified criteria.
+
+        Args:
+            market_cap_more_than (int, optional): Filter stocks with market cap greater than this value.
+            market_cap_lower_than (int, optional): Filter stocks with market cap lower than this value.
+            price_more_than (int, optional): Filter stocks with price greater than this value.
+            price_lower_than (int, optional): Filter stocks with price lower than this value.
+            beta_more_than (float, optional): Filter stocks with beta greater than this value.
+            beta_lower_than (float, optional): Filter stocks with beta lower than this value.
+            volume_more_than (int, optional): Filter stocks with volume greater than this value.
+            volume_lower_than (int, optional): Filter stocks with volume lower than this value.
+            dividend_more_than (float, optional): Filter stocks with dividend greater than this value.
+            dividend_lower_than (float, optional): Filter stocks with dividend lower than this value.
+            is_etf (bool, optional): Filter stocks that are ETFs.
+            is_fund (bool, optional): Filter stocks that are funds.
+            is_actively_trading (bool, optional): Filter stocks that are actively trading.
+            sector (str, optional): Filter stocks by sector.
+            industry (str, optional): Filter stocks by industry.
+            exchange (str, optional): Filter stocks by exchange.
+            limit (int, optional): Limit the number of results returned (default is 1000).
+
+        Returns:
+            pandas.DataFrame: DataFrame containing the stock information.
+
+        """
+        url = "v3/stock-screener"
+        params = {
+            "marketCapMoreThan": market_cap_more_than,
+            "marketCapLowerThan": market_cap_lower_than,
+            "priceMoreThan": price_more_than,
+            "priceLowerThan": price_lower_than,
+            "betaMoreThan": beta_more_than,
+            "betaLowerThan": beta_lower_than,
+            "volumeMoreThan": volume_more_than,
+            "volumeLowerThan": volume_lower_than,
+            "dividendMoreThan": dividend_more_than,
+            "dividendLowerThan": dividend_lower_than,
+            "isEtf": is_etf,
+            "isFund": is_fund,
+            "isActivelyTrading": is_actively_trading,
+            "sector": sector,
+            "industry": industry,
+            "exchange": exchange,
+            "limit": limit,
+            "apikey": self.api_key,
+        }
+
+        response = self.get_request(url=url, params=params)
+
+        return (
+            pd.DataFrame(response)
+            .rename(
+                columns={
+                    "companyName": "company_name",
+                    "marketCap": "market_cap",
+                    "lastAnnualDividend": "last_annual_dividend",
+                    "exchangeShortName": "exchange_short_name",
+                    "isActivelyTrading": "is_actively_trading",
+                    "isEtf": "is_etf",
+                    "isFund": "is_fund",
+                }
+            )
+            .astype(
+                {
+                    "market_cap": "int",
+                    "price": "float",
+                    "volume": "int",
+                    "last_annual_dividend": "float",
+                    "beta": "float",
+                }
+            )
+        )
+
+    ############################
+    # Company Notes
+    ############################
+    def company_notes(self, symbol: str) -> pd.DataFrame:
+        """
+        Retrieves the company notes for a given symbol.
+
+        Parameters:
+        symbol (str): The stock symbol of the company.
+
+        Returns:
+        pd.DataFrame: A DataFrame containing the company notes.
+        """
+        url = "v4/company-notes"
+        params = {"symbol": symbol, "apikey": self.api_key}
+        response = self.get_request(url=url, params=params)
+
+        return pd.DataFrame(response)
+
+    ############################
+    # Historical Employee Count
+    ############################
+    def historical_employee_count(self, symbol: str) -> pd.DataFrame:
+        """
+        Retrieves the historical employee count for a given symbol.
+
+        Parameters:
+        symbol (str): The stock symbol of the company.
+
+        Returns:
+        pd.DataFrame: A DataFrame containing the historical employee count.
+        """
+        url = "v4/historical/employee_count"
+        params = {"symbol": symbol, "apikey": self.api_key}
+        response = self.get_request(url=url, params=params)
+
+        return pd.DataFrame(response)
+
+    ############################
+    # Compensation Benchmark
+    ############################
+    def compensation_benchmark(self, year: int) -> pd.DataFrame:
+        """
+        Retrieves compensation benchmark data for a specific year.
+
+        Args:
+            year (int): The year for which to retrieve the compensation benchmark data.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing the compensation benchmark data.
+
+        """
+        url = "v4/executive-compensation-benchmark"
+        params = {"year": year, "apikey": self.api_key}
+        response = self.get_request(url=url, params=params)
+
+        return (
+            pd.DataFrame(response)
+            .rename(
+                columns={
+                    "industryTitle": "industry_title",
+                    "averageCompensation": "average_compensation",
+                }
+            )
+            .astype(
+                {
+                    "average_compensation": "float",
+                }
+            )
+        )
+
+    ############################
     # Executive Compensation
     ############################
     def executive_compensation(self, symbol: str) -> pd.DataFrame:
-        url = f"{FMP_EXECUTIVE_COMPENSATION}?symbol={symbol}&apikey={self.api_key}"
+        url = "v4/governance/executive_compensation"
 
-        response = self.get_request(url)
+        params = {"symbol": symbol, "apikey": self.api_key}
+
+        response = self.get_request(url=url, params=params)
 
         data_df = pd.DataFrame(response)
         data_df = data_df.rename(
@@ -49,8 +221,9 @@ class FmpCompanyInformation(FmpBase):
         Returns:
             CompanyProfile: A dataclass object containing the company profile information.
         """
-        url = f"{FMP_COMPANY_PROFILE}{ticker}?apikey={self.api_key}"
-        response = self.get_request(url)
+        url = f"v3/company/profile/{ticker}"
+        params = {"apikey": self.api_key}
+        response = self.get_request(url=url, params=params)
         data = response.get("profile", {})
 
         if not data:
