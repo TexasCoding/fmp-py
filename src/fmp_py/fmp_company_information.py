@@ -10,6 +10,39 @@ class FmpCompanyInformation(FmpBase):
         super().__init__()
 
     ############################
+    # Executives
+    ############################
+    def executives(self, symbol: str) -> pd.DataFrame:
+        """
+        Retrieves the executives information for a given symbol.
+
+        Parameters:
+        symbol (str): The stock symbol of the company.
+
+        Returns:
+        pd.DataFrame: A DataFrame containing the executives information.
+        """
+        url = f"v3/key-executives/{symbol}"
+        params = {"apikey": self.api_key}
+        response = self.get_request(url=url, params=params)
+
+        data_df = pd.DataFrame(response).rename(
+            columns={
+                "currencyPay": "currency_pay",
+                "yearBorn": "year_born",
+                "titleSince": "title_since",
+            }
+        )
+
+        data_df["title_since"] = (
+            pd.to_datetime(data_df["title_since"], unit="s")
+            if data_df["title_since"].dtype == "int64"
+            else ""
+        )
+
+        return data_df.fillna("")
+
+    ############################
     # Stock Grade
     ############################
     def stock_grade(self, symbol: str, limit: int = 20) -> pd.DataFrame:
