@@ -20,6 +20,54 @@ class FmpCompanyInformation(FmpBase):
         super().__init__()
 
     ############################
+    # All available exchanges
+    ############################
+    def all_available_exchanges(self) -> List[str]:
+        """
+        Retrieves a list of all available exchanges.
+
+        Returns:
+        List[str]: A list of all available exchanges.
+        """
+        url = "v3/exchanges-list"
+        params = {"apikey": self.api_key}
+        response = self.get_request(url=url, params=params)
+
+        return response
+
+    ############################
+    # All available industries
+    ############################
+    def all_available_industries(self) -> List[str]:
+        """
+        Retrieves a list of all available industries.
+
+        Returns:
+        List[str]: A list of all available industries.
+        """
+        url = "v3/industries-list"
+        params = {"apikey": self.api_key}
+        response = self.get_request(url=url, params=params)
+
+        return response
+
+    ############################
+    # All available sectors
+    ############################
+    def all_available_sectors(self) -> List[str]:
+        """
+        Retrieves a list of all available sectors.
+
+        Returns:
+        List[str]: A list of all available sectors.
+        """
+        url = "v3/sectors-list"
+        params = {"apikey": self.api_key}
+        response = self.get_request(url=url, params=params)
+
+        return response
+
+    ############################
     # Analyst Recommendations
     ############################
     def analyst_recommendations(self, symbol: str) -> pd.DataFrame:
