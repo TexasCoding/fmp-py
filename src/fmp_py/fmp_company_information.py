@@ -1,3 +1,4 @@
+from typing import List
 import pandas as pd
 from fmp_py.fmp_base import (
     FmpBase,
@@ -17,6 +18,105 @@ PREVIOUS_YEAR = CURRENT_YEAR - 1
 class FmpCompanyInformation(FmpBase):
     def __init__(self):
         super().__init__()
+
+    ############################
+    # Analyst Estimates
+    ############################
+    def analyst_estimates(
+        self, symbol: str, period: str = "annual", limit: int = 30
+    ) -> pd.DataFrame:
+        """
+        Retrieves analyst estimates for a given symbol.
+
+        Args:
+            symbol (str): The symbol of the company.
+            period (str, optional): The period for which to retrieve estimates. Defaults to "annual".
+            limit (int, optional): The maximum number of estimates to retrieve. Defaults to 30.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing the analyst estimates.
+
+        Raises:
+            ValueError: If the provided period is not one of ["annual", "quarter"].
+        """
+        period_options = ["annual", "quarter"]
+
+        if period not in period_options:
+            raise ValueError(f"period must be one of {period_options}")
+
+        url = f"v3/analyst-estimates/{symbol}"
+        params = {"period": period, "limit": limit, "apikey": self.api_key}
+
+        response = self.get_request(url=url, params=params)
+
+        return (
+            pd.DataFrame(response)
+            .rename(
+                columns={
+                    "estimatedRevenueLow": "estimated_revenue_low",
+                    "estimatedRevenueHigh": "estimated_revenue_high",
+                    "estimatedRevenueAvg": "estimated_revenue_avg",
+                    "estimatedEbitdaLow": "estimated_ebitda_low",
+                    "estimatedEbitdaHigh": "estimated_ebitda_high",
+                    "estimatedEbitdaAvg": "estimated_ebitda_avg",
+                    "estimatedEbitLow": "estimated_ebit_low",
+                    "estimatedEbitHigh": "estimated_ebit_high",
+                    "estimatedEbitAvg": "estimated_ebit_avg",
+                    "estimatedNetIncomeLow": "estimated_net_income_low",
+                    "estimatedNetIncomeHigh": "estimated_net_income_high",
+                    "estimatedNetIncomeAvg": "estimated_net_income_avg",
+                    "estimatedSgaExpenseLow": "estimated_sga_expense_low",
+                    "estimatedSgaExpenseHigh": "estimated_sga_expense_high",
+                    "estimatedSgaExpenseAvg": "estimated_sga_expense_avg",
+                    "estimatedEpsAvg": "estimated_eps_avg",
+                    "estimatedEpsLow": "estimated_eps_low",
+                    "estimatedEpsHigh": "estimated_eps_high",
+                    "numberAnalystEstimatedRevenue": "number_analyst_estimated_revenue",
+                    "numberAnalystsEstimatedEps": "number_analysts_estimated_eps",
+                }
+            )
+            .astype(
+                {
+                    "date": "datetime64[ns]",
+                    "estimated_revenue_low": "int",
+                    "estimated_revenue_high": "int",
+                    "estimated_revenue_avg": "int",
+                    "estimated_ebitda_low": "int",
+                    "estimated_ebitda_high": "int",
+                    "estimated_ebitda_avg": "int",
+                    "estimated_ebit_low": "int",
+                    "estimated_ebit_high": "int",
+                    "estimated_ebit_avg": "int",
+                    "estimated_net_income_low": "int",
+                    "estimated_net_income_high": "int",
+                    "estimated_net_income_avg": "int",
+                    "estimated_sga_expense_low": "int",
+                    "estimated_sga_expense_high": "int",
+                    "estimated_sga_expense_avg": "int",
+                    "estimated_eps_avg": "float",
+                    "estimated_eps_low": "float",
+                    "estimated_eps_high": "float",
+                    "number_analyst_estimated_revenue": "int",
+                    "number_analysts_estimated_eps": "int",
+                }
+            )
+        )
+
+    ############################
+    # All Countries
+    ############################
+    def all_countries(self) -> List[str]:
+        """
+        Retrieves a list of all countries.
+
+        Returns:
+        List[str]: A list of all countries.
+        """
+        url = "v3/get-all-countries"
+        params = {"apikey": self.api_key}
+        response = self.get_request(url=url, params=params)
+
+        return response
 
     ############################
     # Historical Market Capitalization
