@@ -8,10 +8,46 @@ from fmp_py.models.company_information import (
     CompanyProfile,
 )
 
+from datetime import datetime
+
+CURRENT_YEAR = datetime.now().year
+PREVIOUS_YEAR = CURRENT_YEAR - 1
+
 
 class FmpCompanyInformation(FmpBase):
     def __init__(self):
         super().__init__()
+
+    ############################
+    # Historical Market Capitalization
+    ############################
+    def historical_market_cap(
+        self,
+        symbol: str,
+        from_date: str = PREVIOUS_YEAR,
+        to_date: str = CURRENT_YEAR,
+        limit: int = 500,
+    ) -> pd.DataFrame:
+        """
+        Retrieves the historical market capitalization for a given symbol.
+
+        Parameters:
+        symbol (str): The stock symbol of the company.
+
+        Returns:
+        pd.DataFrame: A DataFrame containing the historical market capitalization.
+        """
+        url = f"v3/historical-market-capitalization/{symbol}"
+        params = {
+            "from": from_date,
+            "to": to_date,
+            "limit": limit,
+            "apikey": self.api_key,
+        }
+
+        response = self.get_request(url=url, params=params)
+
+        return pd.DataFrame(response)
 
     ############################
     # Company Core Information
