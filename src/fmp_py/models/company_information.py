@@ -2,6 +2,13 @@ from dataclasses import dataclass
 
 
 @dataclass
+class CompanyMarketCap:
+    symbol: str
+    market_cap: float
+    date: str
+
+
+@dataclass
 class ExecutiveCompensation:
     symbol: str
     cik: str

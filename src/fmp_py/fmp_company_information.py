@@ -2,12 +2,43 @@ import pandas as pd
 from fmp_py.fmp_base import (
     FmpBase,
 )
-from fmp_py.models.company_information import CompanyProfile
+from fmp_py.models.company_information import CompanyMarketCap, CompanyProfile
 
 
 class FmpCompanyInformation(FmpBase):
     def __init__(self):
         super().__init__()
+
+    ############################
+    # Market Capitalization
+    ############################
+    def market_cap(self, symbol: str) -> CompanyMarketCap:
+        """
+        Retrieves the market capitalization for a given symbol.
+
+        Args:
+            symbol (str): The symbol of the company.
+
+        Returns:
+            CompanyMarketCap: An object containing the symbol, market capitalization, and date.
+
+        Raises:
+            ValueError: If there is an error parsing the response.
+
+        """
+        url = f"v3/market-capitalization/{symbol}"
+        params = {"apikey": self.api_key}
+
+        response = self.get_request(url=url, params=params)
+
+        try:
+            return CompanyMarketCap(
+                symbol=response.get("symbol", ""),
+                market_cap=response.get("marketCap", 0.0),
+                date=response.get("date", ""),
+            )
+        except Exception as e:
+            raise ValueError(f"Error parsing response: {e}")
 
     ############################
     # Executives
