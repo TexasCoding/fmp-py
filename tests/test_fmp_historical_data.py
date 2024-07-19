@@ -121,7 +121,7 @@ def test_calc_vwap():
     )
 
     vwap = fmp._calc_vwap(data_df)
-    expected_vwap = pd.Series([101.67, 106.67], name="vwap")
+    expected_vwap = pd.Series([101.67, 106.67])
     pd.testing.assert_series_equal(vwap.round(2), expected_vwap)
 
 
