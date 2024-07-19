@@ -2,12 +2,57 @@ import pandas as pd
 from fmp_py.fmp_base import (
     FmpBase,
 )
-from fmp_py.models.company_information import CompanyMarketCap, CompanyProfile
+from fmp_py.models.company_information import (
+    CompanyCoreInfo,
+    CompanyMarketCap,
+    CompanyProfile,
+)
 
 
 class FmpCompanyInformation(FmpBase):
     def __init__(self):
         super().__init__()
+
+    ############################
+    # Company Core Information
+    ############################
+    def company_core_info(self, symbol: str) -> CompanyCoreInfo:
+        """
+        Retrieves the core information for a given symbol.
+
+        Args:
+            symbol (str): The symbol of the company.
+
+        Returns:
+            CompanyCoreInfo: An object containing the core information of the company.
+
+        Raises:
+            ValueError: If there is an error parsing the response.
+
+        """
+        url = "v4/company-core-information"
+        params = {"symbol": symbol, "apikey": self.api_key}
+
+        response = self.get_request(url=url, params=params)
+
+        try:
+            return CompanyCoreInfo(
+                cik=response[0].get("cik", ""),
+                symbol=response[0].get("symbol", ""),
+                exchange=response[0].get("exchange", ""),
+                sic_code=response[0].get("sicCode", ""),
+                sic_group=response[0].get("sicGroup", ""),
+                sic_description=response[0].get("sicDescription", ""),
+                state_location=response[0].get("stateLocation", ""),
+                state_of_incorporation=response[0].get("stateOfIncorporation", ""),
+                fiscal_year_end=response[0].get("fiscalYearEnd", ""),
+                business_address=response[0].get("businessAddress", ""),
+                mailing_address=response[0].get("mailingAddress", ""),
+                tax_idenfication_number=response[0].get("taxIdentificationNumber", ""),
+                registrant_name=response[0].get("registrantName", ""),
+            )
+        except Exception as e:
+            raise ValueError(f"Error parsing response: {e}")
 
     ############################
     # Market Capitalization
@@ -33,9 +78,9 @@ class FmpCompanyInformation(FmpBase):
 
         try:
             return CompanyMarketCap(
-                symbol=response.get("symbol", ""),
-                market_cap=response.get("marketCap", 0.0),
-                date=response.get("date", ""),
+                symbol=response[0].get("symbol", ""),
+                market_cap=response[0].get("marketCap", 0.0),
+                date=response[0].get("date", ""),
             )
         except Exception as e:
             raise ValueError(f"Error parsing response: {e}")

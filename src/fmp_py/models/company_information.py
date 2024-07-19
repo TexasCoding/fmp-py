@@ -2,6 +2,23 @@ from dataclasses import dataclass
 
 
 @dataclass
+class CompanyCoreInfo:
+    cik: str
+    symbol: str
+    exchange: str
+    sic_code: str
+    sic_group: str
+    sic_description: str
+    state_location: str
+    state_of_incorporation: str
+    fiscal_year_end: str
+    business_address: str
+    mailing_address: str
+    tax_idenfication_number: str
+    registrant_name: str
+
+
+@dataclass
 class CompanyMarketCap:
     symbol: str
     market_cap: float
