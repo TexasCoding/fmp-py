@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "fmp-py"
-version = "0.0.1"
+version = "0.0.2"
 description = ""
 authors = ["TexasCoding <jeff10278@me.com>"]
 readme = "README.md"
 packages = [{include = "fmp_py", from = "src"}]
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.10"
 requests = "^2.32.3"
 python-dotenv = "^1.0.1"
 pandas = "^2.2.2"
