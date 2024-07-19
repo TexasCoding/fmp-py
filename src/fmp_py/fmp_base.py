@@ -1,26 +1,60 @@
 import os
-from dotenv import load_dotenv
 import requests
+from dotenv import load_dotenv
+from typing import Dict, Any
 
 load_dotenv()
-FMP_API_KEY = os.getenv("FMP_API_KEY", "")
 
+FMP_API_KEY = os.getenv("FMP_API_KEY", "")
 FMP_BASE_URL = "https://financialmodelingprep.com/api/"
-FMP_DAILY_HISTORY = "v3/historical-price-full/"
-FMP_INTRADAY_HISTORY = "v3/historical-chart/"
-# FMP_COMPANY_PROFILE = "v3/company/profile/"
-# FMP_EXECUTIVE_COMPENSATION = "v4/governance/executive_compensation"
-# FMP_COMPENSATION_BENCHMARK = "v4/executive-compensation-benchmark"
-# FMP_COMPANY_NOTES = "v4/company-notes"
-# FMP_EMPLOYEE_COUNT = "v4/historical/employee_count"
 
 
 class FmpBase:
     def __init__(self, api_key: str = FMP_API_KEY) -> None:
-        self.api_key = api_key
+        """
+        Initialize the FmpBase class.
 
-    def get_request(self, url: str, params: dict = None) -> dict:
-        response = requests.get(f"{FMP_BASE_URL}{url}", params=params)
-        if response.status_code != 200:
-            raise Exception(f"Error: {response.status_code}")
-        return response.json()
+        Args:
+            api_key (str): The API key for Financial Modeling Prep. Defaults to the value from environment variable.
+        """
+        if not api_key:
+            raise ValueError(
+                "API Key is required. Set it as environment variable 'FMP_API_KEY' or pass it directly."
+            )
+        self.api_key = api_key
+        self.session = requests.Session()
+
+    def get_request(self, url: str, params: Dict[str, Any] = None) -> Dict[str, Any]:
+        """
+        Make a GET request to the specified URL with the given parameters.
+
+        Args:
+            url (str): The URL endpoint to make the request to.
+            params (Dict[str, Any]): Additional parameters for the request.
+
+        Returns:
+            Dict[str, Any]: The JSON response from the server.
+
+        Raises:
+            Exception: If the response status code is not 200 or if there is a request exception.
+        """
+        params = params or {}
+        params["apikey"] = self.api_key
+        full_url = f"{FMP_BASE_URL}{url}"
+
+        try:
+            response = self.session.get(full_url, params=params)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"Request failed: {e}")
+
+        try:
+            return response.json()
+        except ValueError:
+            raise Exception("Failed to parse JSON response")
+
+    def __del__(self):
+        """
+        Ensure the session is properly closed when the object is deleted.
+        """
+        self.session.close()

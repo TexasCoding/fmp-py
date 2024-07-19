@@ -1,3 +1,5 @@
+# src/fmp_py/fmp_company_information.py
+# Define the FmpCompanyInformation class that inherits from FmpBase.
 from typing import List
 import pandas as pd
 from fmp_py.fmp_base import (
@@ -511,7 +513,27 @@ class FmpCompanyInformation(FmpBase):
         params = {"symbol": symbol, "apikey": self.api_key}
         response = self.get_request(url=url, params=params)
 
-        return pd.DataFrame(response)
+        return (
+            pd.DataFrame(response)
+            .rename(
+                columns={
+                    "filingDate": "filed_date",
+                    "acceptanceTime": "acceptance_time",
+                    "periodOfReport": "period_of_report",
+                    "employeeCount": "employee_count",
+                    "formType": "form_type",
+                    "companyName": "company_name",
+                }
+            )
+            .astype(
+                {
+                    "filed_date": "datetime64[ns]",
+                    "acceptance_time": "datetime64[ns]",
+                    "period_of_report": "datetime64[ns]",
+                    "employee_count": "int",
+                }
+            )
+        )
 
     ############################
     # Compensation Benchmark
