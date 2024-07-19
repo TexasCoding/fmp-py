@@ -20,6 +20,47 @@ class FmpCompanyInformation(FmpBase):
         super().__init__()
 
     ############################
+    # Analyst Recommendations
+    ############################
+    def analyst_recommendations(self, symbol: str) -> pd.DataFrame:
+        """
+        Retrieves the analyst recommendations for a given symbol.
+
+        Args:
+            symbol (str): The symbol of the company.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing the analyst recommendations.
+        """
+        url = f"v3/analyst-stock-recommendations/{symbol}"
+        params = {"apikey": self.api_key}
+
+        response = self.get_request(url=url, params=params)
+
+        return (
+            pd.DataFrame(response)
+            .rename(
+                columns={
+                    "analystRatingsStrongBuy": "analyst_ratings_strong_buy",
+                    "analystRatingsbuy": "analyst_ratings_buy",
+                    "analystRatingsStrongSell": "analyst_ratings_strong_sell",
+                    "analystRatingsSell": "analyst_ratings_sell",
+                    "analystRatingsHold": "analyst_ratings_hold",
+                }
+            )
+            .astype(
+                {
+                    "date": "datetime64[ns]",
+                    "analyst_ratings_strong_buy": "int",
+                    "analyst_ratings_buy": "int",
+                    "analyst_ratings_strong_sell": "int",
+                    "analyst_ratings_sell": "int",
+                    "analyst_ratings_hold": "int",
+                }
+            )
+        )
+
+    ############################
     # Analyst Estimates
     ############################
     def analyst_estimates(
