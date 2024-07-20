@@ -1,3 +1,5 @@
+# src/fmp_py/fmp_statement_analysis.py
+# Define the FmpStatementAnalysis class
 import pandas as pd
 from fmp_py.fmp_base import FmpBase
 import os
