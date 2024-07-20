@@ -4,6 +4,11 @@ version = "0.0.5"
 description = ""
 authors = ["TexasCoding <jeff10278@me.com>"]
 readme = "README.md"
+
+homepage = "https://pypi.org/project/fmp-py/"
+repository = "https://github.com/TexasCoding/fmp-py"
+documentation = "https://github.com/TexasCoding/fmp-py"
+
 packages = [{include = "fmp_py", from = "src"}]
 
 [tool.poetry.dependencies]
