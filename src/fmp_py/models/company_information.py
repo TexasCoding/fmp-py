@@ -21,7 +21,7 @@ class CompanyCoreInfo:
 @dataclass
 class CompanyMarketCap:
     symbol: str
-    market_cap: float
+    market_cap: int
     date: str
 
 
@@ -51,7 +51,7 @@ class CompanyProfile:
     beta: float
     vol_avg: int
     mkt_cap: int
-    last_div: float
+    last_div: int
     range: str
     changes: float
     company_name: str
@@ -67,13 +67,13 @@ class CompanyProfile:
     ceo: str
     sector: str
     country: str
-    full_time_employees: str
+    full_time_employees: int
     phone: str
     address: str
     city: str
     state: str
     zip: str
-    dcf_iff: float
+    dcf_diff: float
     dcf: float
     image: str
     ipo_date: str
