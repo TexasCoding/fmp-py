@@ -54,10 +54,10 @@ class Ratios:
     fixed_asset_turnover_ttm: float
     asset_turnover_ttm: float
     operating_cash_flow_per_share_ttm: float
-    free_cash_flow_per_share_ttm: float
     cash_per_share_ttm: float
     operating_cash_flow_sales_ratio_ttm: float
     free_cash_flow_operating_cash_flow_ratio_ttm: float
+    free_cash_flow_per_share_ttm: float
     cash_flow_coverage_ratios_ttm: float
     short_term_coverage_ratios_ttm: float
     capital_expenditure_coverage_ratio_ttm: float
