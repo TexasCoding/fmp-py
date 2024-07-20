@@ -9,238 +9,805 @@ from fmp_py.models.statement_analysis import FinancialScore, Ratios, KeyMetrics
 
 load_dotenv()
 
+"""
+The FmpStatementAnalysis class provides methods for retrieving financial statement analysis data from the Financial Modeling Prep API.
+
+API Reference:
+    def financial_score(self, symbol: str) -> FinancialScore:
+        Reference: https://site.financialmodelingprep.com/developer/docs#financial-score-statement-analysis
+        
+    def ratios(self, symbol: str, period: str = "annual", limit: int = 20) -> pd.DataFrame
+        Reference: https://site.financialmodelingprep.com/developer/docs#ratios-statement-analysis
+    
+    def ratios_ttm(self, symbol: str) -> Ratios:
+        Reference: https://site.financialmodelingprep.com/developer/docs#ratios-ttm-statement-analysis
+
+    def key_metrics_ttm(self, symbol: str) -> KeyMetrics:
+        Reference: https://site.financialmodelingprep.com/developer/docs#key-metrics-ttm-statement-analysis
+        
+    def key_metrics(self, symbol: str, period: str = "annual", limit: int = 20) -> pd.DataFrame:
+        Reference: https://site.financialmodelingprep.com/developer/docs#key-metrics-statement-analysis'
+    
+    def cashflow_growth(self, symbol: str, period: str = "annual", limit: int = 20) -> pd.DataFrame:
+        Reference: https://site.financialmodelingprep.com/developer/docs#cashflow-growth-statement-analysis
+        
+    def income_growth(self, symbol: str, period: str = "annual", limit: int = 20) -> pd.DataFrame:
+        Reference: https://site.financialmodelingprep.com/developer/docs#income-growth-statement-analysis
+        
+    def balance_sheet_growth(self, symbol: str, period: str = "annual", limit: int = 20) -> pd.DataFrame:
+        Reference: https://site.financialmodelingprep.com/developer/docs#balance-sheet-growth-statement-analysis
+        
+    def financial_growth(self, symbol: str, period: str = "annual", limit: int = 20) -> pd.DataFrame:
+        Reference: https://site.financialmodelingprep.com/developer/docs#financial-growth-statement-analysis
+        
+    def owner_earnings(self, symbol: str) -> pd.DataFrame:
+        Reference: https://site.financialmodelingprep.com/developer/docs#owner-earnings-statement-analysis
+        
+    def enterprise_values(self, symbol: str) -> pd.DataFrame:
+        Reference: https://site.financialmodelingprep.com/developer/docs#enterprise-values-statement-analysis
+"""
+
 
 class FmpStatementAnalysis(FmpBase):
     def __init__(self, api_key: str = os.getenv("FMP_API_KEY")) -> None:
         super().__init__(api_key)
 
     ##############################
-    # Financial Score
+    # Enterprise Values
     ##############################
-    def financial_score(self, symbol: str) -> FinancialScore:
+    def enterprise_values(self, symbol: str) -> pd.DataFrame:
         """
-        Calculates the financial score for the given stock symbol.
+        Retrieves the enterprise values data for a given stock symbol.
 
         Args:
-            symbol (str): The stock symbol to calculate the financial score for.
+            symbol (str): The stock symbol.
 
         Returns:
-            FinancialScore: A dataclass containing the financial score metrics for the given stock symbol.
+            pd.DataFrame: A DataFrame containing the enterprise values data.
 
-        Examples:
-            >>> fmp = FmpStatementAnalysis()
-            >>> financial_score = fmp.financial_score("AAPL")
-            >>> print(financial_score)
-            FinancialScore(symbol='AAPL', altman_z_score=0.69, piotroski_score=0.75, working_capital=1.41, total_assets=195.8,
-            retained_earnings=11.3, ebit=4.3, market_cap=215.1, total_liabilities=14.8, current_ratio=1.4, quick_ratio=1.0,
-            cash_ratio=1.0, days_of_sales_outstanding=10.2, days_of_inventory_outstanding=10.2, operating_cycle=10.2,
-            days_of_payables_outstanding=10.2, cash_conversion_cycle=10.2, gross_profit_margin=0.24, operating_profit_margin=0.14,
-            pretax_profit_margin=0.14, net_profit_margin=0.14, effective_tax_rate=0.14, return_on_assets=0.14,
-            return_on_equity=0.14, return_on_capital_employed=0.14, net_income_per_ebt=0.14, ebt_per_ebit=0.14,
-            ebit_per_revenue=0.14, debt_ratio=0.14, debt_equity_ratio=0.14, longTermDebtToCapitalization=0.14,
-            total_debt_to_capitalization=0.14, interest_coverage=0.14, cash_flow_to_debt_ratio=0.14)
+        Raises:
+            ValueError: If no data is found for the given symbol.
         """
+        url = f"v3/enterprise-values/{symbol}"
+        params = {"apikey": self.api_key}
 
-        url = "v4/score"
-        params = {"symbol": symbol, "apikey": self.api_key}
         response = self.get_request(url, params)
-        data_df = (
+
+        if not response:
+            raise ValueError("No data found for the given symbol.")
+
+        return (
             pd.DataFrame(response)
             .rename(
                 columns={
                     "symbol": "symbol",
-                    "altmanZScore": "altman_z_score",
-                    "piotroskiScore": "piotroski_score",
-                    "workingCapital": "working_capital",
-                    "totalAssets": "total_assets",
-                    "retainedEarnings": "retained_earnings",
-                    "ebit": "ebit",
-                    "marketCap": "market_cap",
-                    "totalLiabilities": "total_liabilities",
-                    "revenue": "revenue",
+                    "date": "date",
+                    "stockPrice": "stock_price",
+                    "numberOfShares": "number_of_shares",
+                    "marketCapitalization": "market_capitalization",
+                    "minusCashAndCashEquivalents": "minus_cash_and_cash_equivalents",
+                    "addTotalDebt": "add_total_debt",
+                    "enterpriseValue": "enterprise_value",
                 }
             )
             .astype(
                 {
-                    "altman_z_score": "float",
-                    "piotroski_score": "int",
-                    "working_capital": "int",
-                    "total_assets": "int",
-                    "retained_earnings": "int",
-                    "ebit": "int",
-                    "market_cap": "int",
-                    "total_liabilities": "int",
-                    "revenue": "int",
+                    "symbol": "str",
+                    "date": "datetime64[ns]",
+                    "stock_price": "float",
+                    "number_of_shares": "int",
+                    "market_capitalization": "int",
+                    "minus_cash_and_cash_equivalents": "int",
+                    "add_total_debt": "int",
+                    "enterprise_value": "int",
                 }
             )
-            .iloc[0]
+            .sort_values("date", ascending=True)
+            .reset_index(drop=True)
         )
 
-        return FinancialScore(**data_df.to_dict())
+    ##############################
+    # Owner Earnings
+    ##############################
+
+    def owner_earnings(self, symbol: str) -> pd.DataFrame:
+        """
+        Retrieves the owner's earnings data for a given stock symbol.
+
+        Args:
+            symbol (str): The stock symbol.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing the owner's earnings data.
+
+        Raises:
+            ValueError: If no data is found for the given symbol.
+        """
+        url = "v4/owner_earnings"
+        params = {"symbol": symbol, "apikey": self.api_key}
+
+        response = self.get_request(url, params)
+
+        if not response:
+            raise ValueError("No data found for the given symbol.")
+
+        return (
+            pd.DataFrame(response)
+            .rename(
+                columns={
+                    "symbol": "symbol",
+                    "date": "date",
+                    "averagePPE": "average_ppe",
+                    "maintenanceCapex": "maintenance_capex",
+                    "ownersEarnings": "owners_earnings",
+                    "growthCapex": "growth_capex",
+                    "ownersEarningsPerShare": "owners_earnings_per_share",
+                }
+            )
+            .astype(
+                {
+                    "symbol": "str",
+                    "date": "datetime64[ns]",
+                    "average_ppe": "float",
+                    "maintenance_capex": "int",
+                    "owners_earnings": "int",
+                    "growth_capex": "int",
+                    "owners_earnings_per_share": "float",
+                }
+            )
+            .sort_values(by="date", ascending=False)
+            .reset_index(drop=True)
+        )
+
+    ##############################
+    # Financial Growth
+    ##############################
+    def financial_growth(
+        self, symbol: str, period: str = "annual", limit: int = 20
+    ) -> pd.DataFrame:
+        """
+        Retrieves the financial growth data for a given stock symbol.
+
+        Args:
+            symbol (str): The stock symbol.
+            period (str, optional): The period of the data (e.g., "annual", "quarterly"). Defaults to "annual".
+            limit (int, optional): The maximum number of records to retrieve. Defaults to 20.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing the financial growth data.
+
+        Raises:
+            ValueError: If the period is not "annual" or "quarterly".
+            ValueError: If no data is found for the given symbol.
+        """
+        if period not in ["annual", "quarterly"]:
+            raise ValueError("Invalid period. Must be either 'annual' or 'quarterly'.")
+
+        url = f"v3/financial-growth/{symbol}"
+        params = {"period": period, "limit": limit, "apikey": self.api_key}
+
+        response = self.get_request(url, params)
+
+        if not response:
+            raise ValueError("No data found for the given symbol.")
+
+        return (
+            pd.DataFrame(response)
+            .rename(
+                columns={
+                    "symbol": "symbol",
+                    "date": "date",
+                    "calendarYear": "calendar_year",
+                    "period": "period",
+                    "revenueGrowth": "revenue_growth",
+                    "grossProfitGrowth": "gross_profit_growth",
+                    "ebitgrowth": "ebit_growth",
+                    "operatingIncomeGrowth": "operating_income_growth",
+                    "netIncomeGrowth": "net_income_growth",
+                    "epsgrowth": "eps_growth",
+                    "epsdilutedGrowth": "eps_diluted_growth",
+                    "weightedAverageSharesGrowth": "weighted_average_shares_growth",
+                    "weightedAverageSharesDilutedGrowth": "weighted_average_shares_diluted_growth",
+                    "dividendsperShareGrowth": "dividends_per_share_growth",
+                    "operatingCashFlowGrowth": "operating_cash_flow_growth",
+                    "freeCashFlowGrowth": "free_cash_flow_growth",
+                    "tenYRevenueGrowthPerShare": "ten_y_revenue_growth_per_share",
+                    "fiveYRevenueGrowthPerShare": "five_y_revenue_growth_per_share",
+                    "threeYRevenueGrowthPerShare": "three_y_revenue_growth_per_share",
+                    "tenYOperatingCFGrowthPerShare": "ten_y_operating_cf_growth_per_share",
+                    "fiveYOperatingCFGrowthPerShare": "five_y_operating_cf_growth_per_share",
+                    "threeYOperatingCFGrowthPerShare": "three_y_operating_cf_growth_per_share",
+                    "tenYNetIncomeGrowthPerShare": "ten_y_net_income_growth_per_share",
+                    "fiveYNetIncomeGrowthPerShare": "five_y_net_income_growth_per_share",
+                    "threeYNetIncomeGrowthPerShare": "three_y_net_income_growth_per_share",
+                    "tenYShareholdersEquityGrowthPerShare": "ten_y_shareholders_equity_growth_per_share",
+                    "fiveYShareholdersEquityGrowthPerShare": "five_y_shareholders_equity_growth_per_share",
+                    "threeYShareholdersEquityGrowthPerShare": "three_y_shareholders_equity_growth_per_share",
+                    "tenYDividendperShareGrowthPerShare": "ten_y_dividend_per_share_growth_per_share",
+                    "fiveYDividendperShareGrowthPerShare": "five_y_dividend_per_share_growth_per_share",
+                    "threeYDividendperShareGrowthPerShare": "three_y_dividend_per_share_growth_per_share",
+                    "receivablesGrowth": "receivables_growth",
+                    "inventoryGrowth": "inventory_growth",
+                    "assetGrowth": "asset_growth",
+                    "bookValueperShareGrowth": "book_value_per_share_growth",
+                    "debtGrowth": "debt_growth",
+                    "rdexpenseGrowth": "rdexpense_growth",
+                    "sgaexpensesGrowth": "sgaexpenses_growth",
+                }
+            )
+            .astype(
+                {
+                    "symbol": "str",
+                    "date": "datetime64[ns]",
+                    "calendar_year": "int",
+                    "period": "str",
+                    "revenue_growth": "float",
+                    "gross_profit_growth": "float",
+                    "ebit_growth": "float",
+                    "operating_income_growth": "float",
+                    "net_income_growth": "float",
+                    "eps_growth": "float",
+                    "eps_diluted_growth": "float",
+                    "weighted_average_shares_growth": "float",
+                    "weighted_average_shares_diluted_growth": "float",
+                    "dividends_per_share_growth": "float",
+                    "operating_cash_flow_growth": "float",
+                    "free_cash_flow_growth": "float",
+                    "ten_y_revenue_growth_per_share": "float",
+                    "five_y_revenue_growth_per_share": "float",
+                    "three_y_revenue_growth_per_share": "float",
+                    "ten_y_operating_cf_growth_per_share": "float",
+                    "five_y_operating_cf_growth_per_share": "float",
+                    "three_y_operating_cf_growth_per_share": "float",
+                    "ten_y_net_income_growth_per_share": "float",
+                    "five_y_net_income_growth_per_share": "float",
+                    "three_y_net_income_growth_per_share": "float",
+                    "ten_y_shareholders_equity_growth_per_share": "float",
+                    "five_y_shareholders_equity_growth_per_share": "float",
+                    "three_y_shareholders_equity_growth_per_share": "float",
+                    "ten_y_dividend_per_share_growth_per_share": "float",
+                    "five_y_dividend_per_share_growth_per_share": "float",
+                    "three_y_dividend_per_share_growth_per_share": "float",
+                    "receivables_growth": "float",
+                    "inventory_growth": "float",
+                    "asset_growth": "float",
+                    "book_value_per_share_growth": "float",
+                    "debt_growth": "float",
+                    "rdexpense_growth": "float",
+                    "sgaexpenses_growth": "float",
+                }
+            )
+            .sort_values("date", ascending=True)
+            .reset_index(drop=True)
+        )
+
+    ############################
+    # Balance Sheet Growth
+    ############################
+    def balance_sheet_growth(
+        self, symbol: str, period: str = "annual", limit: int = 20
+    ) -> pd.DataFrame:
+        """
+        Retrieves the balance sheet growth data for a given symbol.
+
+        Args:
+            symbol (str): The stock symbol.
+            period (str, optional): The period of the data. Can be 'annual' or 'quarterly'. Defaults to 'annual'.
+            limit (int, optional): The maximum number of records to retrieve. Defaults to 20.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing the balance sheet growth data.
+
+        Raises:
+            ValueError: If an invalid period is provided.
+            ValueError: If no data is found for the given symbol.
+        """
+
+        if period not in ["annual", "quarterly"]:
+            raise ValueError("Invalid period. Please choose 'annual' or 'quarterly'.")
+
+        url = f"v3/balance-sheet-statement-growth/{symbol}"
+        params = {"period": period, "limit": limit, "apikey": self.api_key}
+
+        response = self.get_request(url=url, params=params)
+
+        if not response:
+            raise ValueError("No data found for the given symbol.")
+
+        return (
+            pd.DataFrame(response)
+            .rename(
+                columns={
+                    "date": "date",
+                    "symbol": "symbol",
+                    "calendarYear": "calendar_year",
+                    "period": "period",
+                    "growthCashAndCashEquivalents": "growth_cash_and_cash_equivalents",
+                    "growthShortTermInvestments": "growth_short_term_investments",
+                    "growthCashAndShortTermInvestments": "growth_cash_and_short_term_investments",
+                    "growthNetReceivables": "growth_net_receivables",
+                    "growthInventory": "growth_inventory",
+                    "growthOtherCurrentAssets": "growth_other_current_assets",
+                    "growthTotalCurrentAssets": "growth_total_current_assets",
+                    "growthPropertyPlantEquipmentNet": "growth_property_plant_equipment_net",
+                    "growthGoodwill": "growth_goodwill",
+                    "growthIntangibleAssets": "growth_intangible_assets",
+                    "growthGoodwillAndIntangibleAssets": "growth_goodwill_and_intangible_assets",
+                    "growthLongTermInvestments": "growth_long_term_investments",
+                    "growthTaxAssets": "growth_tax_assets",
+                    "growthOtherNonCurrentAssets": "growth_other_non_current_assets",
+                    "growthTotalNonCurrentAssets": "growth_total_non_current_assets",
+                    "growthOtherAssets": "growth_other_assets",
+                    "growthTotalAssets": "growth_total_assets",
+                    "growthAccountPayables": "growth_account_payables",
+                    "growthShortTermDebt": "growth_short_term_debt",
+                    "growthTaxPayables": "growth_tax_payables",
+                    "growthDeferredRevenue": "growth_deferred_revenue",
+                    "growthOtherCurrentLiabilities": "growth_other_current_liabilities",
+                    "growthTotalCurrentLiabilities": "growth_total_current_liabilities",
+                    "growthLongTermDebt": "growth_long_term_debt",
+                    "growthDeferredRevenueNonCurrent": "growth_deferred_revenue_non_current",
+                    "growthDeferrredTaxLiabilitiesNonCurrent": "growth_deferrred_tax_liabilities_non_current",
+                    "growthOtherNonCurrentLiabilities": "growth_other_non_current_liabilities",
+                    "growthTotalNonCurrentLiabilities": "growth_total_non_current_liabilities",
+                    "growthOtherLiabilities": "growth_other_liabilities",
+                    "growthTotalLiabilities": "growth_total_liabilities",
+                    "growthCommonStock": "growth_common_stock",
+                    "growthRetainedEarnings": "growth_retained_earnings",
+                    "growthAccumulatedOtherComprehensiveIncomeLoss": "growth_accumulated_other_comprehensive_income_loss",
+                    "growthOthertotalStockholdersEquity": "growth_othertotal_stockholders_equity",
+                    "growthTotalStockholdersEquity": "growth_total_stockholders_equity",
+                    "growthTotalLiabilitiesAndStockholdersEquity": "growth_total_liabilities_and_stockholders_equity",
+                    "growthTotalInvestments": "growth_total_investments",
+                    "growthTotalDebt": "growth_total_debt",
+                    "growthNetDebt": "growth_net_debt",
+                }
+            )
+            .astype(
+                {
+                    "date": "datetime64[ns]",
+                    "symbol": "str",
+                    "calendar_year": "int",
+                    "period": "str",
+                    "growth_cash_and_cash_equivalents": "float",
+                    "growth_short_term_investments": "float",
+                    "growth_cash_and_short_term_investments": "float",
+                    "growth_net_receivables": "float",
+                    "growth_inventory": "float",
+                    "growth_other_current_assets": "float",
+                    "growth_total_current_assets": "float",
+                    "growth_property_plant_equipment_net": "float",
+                    "growth_goodwill": "float",
+                    "growth_intangible_assets": "float",
+                    "growth_goodwill_and_intangible_assets": "float",
+                    "growth_long_term_investments": "float",
+                    "growth_tax_assets": "float",
+                    "growth_other_non_current_assets": "float",
+                    "growth_total_non_current_assets": "float",
+                    "growth_other_assets": "float",
+                    "growth_total_assets": "float",
+                    "growth_account_payables": "float",
+                    "growth_short_term_debt": "float",
+                    "growth_tax_payables": "float",
+                    "growth_deferred_revenue": "float",
+                    "growth_other_current_liabilities": "float",
+                    "growth_total_current_liabilities": "float",
+                    "growth_long_term_debt": "float",
+                    "growth_deferred_revenue_non_current": "float",
+                    "growth_deferrred_tax_liabilities_non_current": "float",
+                    "growth_other_non_current_liabilities": "float",
+                    "growth_total_non_current_liabilities": "float",
+                    "growth_other_liabilities": "float",
+                    "growth_total_liabilities": "float",
+                    "growth_common_stock": "float",
+                    "growth_retained_earnings": "float",
+                    "growth_accumulated_other_comprehensive_income_loss": "float",
+                    "growth_othertotal_stockholders_equity": "float",
+                    "growth_total_stockholders_equity": "float",
+                    "growth_total_liabilities_and_stockholders_equity": "float",
+                    "growth_total_investments": "float",
+                    "growth_total_debt": "float",
+                    "growth_net_debt": "float",
+                }
+            )
+            .sort_values("date", ascending=True)
+            .reset_index(drop=True)
+        )
+
+    ##############################
+    # Income Growth
+    ##############################
+    def income_growth(
+        self, symbol: str, period: str = "annual", limit: int = 20
+    ) -> pd.DataFrame:
+        """
+        Retrieves the income statement growth data for a given symbol.
+
+        Args:
+            symbol (str): The stock symbol.
+            period (str, optional): The period of the data (e.g., "annual", "quarter"). Defaults to "annual".
+            limit (int, optional): The number of data points to retrieve. Defaults to 20.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing the income statement growth data.
+
+        Raises:
+            ValueError: If the provided period is invalid.
+            ValueError: If no data is found for the given symbol.
+        """
+        if period not in ["annual", "quarter"]:
+            raise ValueError("Invalid period. Must be 'annual' or 'quarter'.")
+
+        url = f"v3/income-statement-growth/{symbol}"
+        params = {"period": period, "limit": limit, "apikey": self.api_key}
+
+        response = self.get_request(url, params)
+
+        if not response:
+            raise ValueError("No data found for the provided symbol.")
+
+        return (
+            pd.DataFrame(response)
+            .rename(
+                columns={
+                    "date": "date",
+                    "symbol": "symbol",
+                    "calendarYear": "calendar_year",
+                    "period": "period",
+                    "growthRevenue": "growth_revenue",
+                    "growthCostOfRevenue": "growth_cost_of_revenue",
+                    "growthGrossProfit": "growth_gross_profit",
+                    "growthGrossProfitRatio": "growth_gross_profit_ratio",
+                    "growthResearchAndDevelopmentExpenses": "growth_research_and_development_expenses",
+                    "growthGeneralAndAdministrativeExpenses": "growth_general_and_administrative_expenses",
+                    "growthSellingAndMarketingExpenses": "growth_selling_and_marketing_expenses",
+                    "growthOtherExpenses": "growth_other_expenses",
+                    "growthOperatingExpenses": "growth_operating_expenses",
+                    "growthCostAndExpenses": "growth_cost_and_expenses",
+                    "growthInterestExpense": "growth_interest_expense",
+                    "growthDepreciationAndAmortization": "growth_depreciation_and_amortization",
+                    "growthEBITDA": "growth_ebitda",
+                    "growthEBITDARatio": "growth_ebitda_ratio",
+                    "growthOperatingIncome": "growth_operating_income",
+                    "growthOperatingIncomeRatio": "growth_operating_income_ratio",
+                    "growthTotalOtherIncomeExpensesNet": "growth_total_other_income_expenses_net",
+                    "growthIncomeBeforeTax": "growth_income_before_tax",
+                    "growthIncomeBeforeTaxRatio": "growth_income_before_tax_ratio",
+                    "growthIncomeTaxExpense": "growth_income_tax_expense",
+                    "growthNetIncome": "growth_net_income",
+                    "growthNetIncomeRatio": "growth_net_income_ratio",
+                    "growthEPS": "growth_eps",
+                    "growthEPSDiluted": "growth_eps_diluted",
+                    "growthWeightedAverageShsOut": "growth_weighted_average_shs_out",
+                    "growthWeightedAverageShsOutDil": "growth_weighted_average_shs_out_dil",
+                }
+            )
+            .astype(
+                {
+                    "date": "datetime64[ns]",
+                    "symbol": "str",
+                    "calendar_year": "int",
+                    "period": "str",
+                    "growth_revenue": "float",
+                    "growth_cost_of_revenue": "float",
+                    "growth_gross_profit": "float",
+                    "growth_gross_profit_ratio": "float",
+                    "growth_research_and_development_expenses": "float",
+                    "growth_general_and_administrative_expenses": "float",
+                    "growth_selling_and_marketing_expenses": "float",
+                    "growth_other_expenses": "float",
+                    "growth_operating_expenses": "float",
+                    "growth_cost_and_expenses": "float",
+                    "growth_interest_expense": "float",
+                    "growth_depreciation_and_amortization": "float",
+                    "growth_ebitda": "float",
+                    "growth_ebitda_ratio": "float",
+                    "growth_operating_income": "float",
+                    "growth_operating_income_ratio": "float",
+                    "growth_total_other_income_expenses_net": "float",
+                    "growth_income_before_tax": "float",
+                    "growth_income_before_tax_ratio": "float",
+                    "growth_income_tax_expense": "float",
+                    "growth_net_income": "float",
+                    "growth_net_income_ratio": "float",
+                    "growth_eps": "float",
+                    "growth_eps_diluted": "float",
+                    "growth_weighted_average_shs_out": "float",
+                    "growth_weighted_average_shs_out_dil": "float",
+                }
+            )
+            .sort_values("date", ascending=True)
+            .reset_index(drop=True)
+        )
+
+    ##############################
+    # Cash Flow Growth
+    ##############################
+    def cashflow_growth(
+        self, symbol: str, period: str = "annual", limit: int = 20
+    ) -> pd.DataFrame:
+        """
+        Retrieves the cash flow growth data for the given stock symbol and period.
+
+        Args:
+            symbol (str): The stock symbol to retrieve the cash flow growth data for.
+            period (str, optional): The period to retrieve the data for, either 'annual' or 'quarter'. Defaults to 'annual'.
+            limit (int, optional): The maximum number of records to retrieve. Defaults to 20.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing the cash flow growth data for the given stock symbol and period.
+
+        Raises:
+            ValueError: If the period is not 'annual' or 'quarter'.
+            ValueError: If no data is found for the given symbol and period.
+        """
+        if period not in ["annual", "quarter"]:
+            raise ValueError("Invalid period. Please choose 'annual' or 'quarter'.")
+
+        url = f"v3/cash-flow-statement-growth/{symbol}"
+        params = {"period": period, "limit": limit, "apikey": self.api_key}
+        response = self.get_request(url, params)
+
+        if not response:
+            raise ValueError("No data found for the given symbol and period.")
+
+        return (
+            pd.DataFrame(response)
+            .rename(
+                columns={
+                    "symbol": "symbol",
+                    "date": "date",
+                    "period": "period",
+                    "calendarYear": "calendar_year",
+                    "growthNetIncome": "growth_net_income",
+                    "growthDepreciationAndAmortization": "growth_depreciation_and_amortization",
+                    "growthStockBasedCompensation": "growth_stock_based_compensation",
+                    "growthChangeInWorkingCapital": "growth_change_in_working_capital",
+                    "growthAccountsReceivables": "growth_accounts_receivables",
+                    "growthInventory": "growth_inventory",
+                    "growthAccountsPayables": "growth_accounts_payables",
+                    "growthOtherWorkingCapital": "growth_other_working_capital",
+                    "growthOtherNonCashItems": "growth_other_non_cash_items",
+                    "growthNetCashProvidedByOperatingActivites": "growth_net_cash_provided_by_operating_activities",
+                    "growthInvestmentsInPropertyPlantAndEquipment": "growth_investments_in_property_plant_and_equipment",
+                    "growthAcquisitionsNet": "growth_acquisitions_net",
+                    "growthPurchasesOfInvestments": "growth_purchases_of_investments",
+                    "growthSalesMaturitiesOfInvestments": "growth_sales_maturities_of_investments",
+                    "growthNetCashUsedForInvestingActivites": "growth_net_cash_used_for_investing_activities",
+                    "growthDebtRepayment": "growth_debt_repayment",
+                    "growthCommonStockIssued": "growth_common_stock_issued",
+                    "growthCommonStockRepurchased": "growth_common_stock_repurchased",
+                    "growthDeferredIncomeTax": "growth_deferred_income_tax",
+                    "growthDividendsPaid": "growth_dividends_paid",
+                    "growthNetCashUsedProvidedByFinancingActivities": "growth_net_cash_used_provided_by_financing_activities",
+                    "growthEffectOfForexChangesOnCash": "growth_effect_of_forex_changes_on_cash",
+                    "growthNetChangeInCash": "growth_net_change_in_cash",
+                    "growthCashAtEndOfPeriod": "growth_cash_at_end_of_period",
+                    "growthCashAtBeginningOfPeriod": "growth_cash_at_beginning_of_period",
+                    "growthOperatingCashFlow": "growth_operating_cash_flow",
+                    "growthCapitalExpenditure": "growth_capital_expenditure",
+                    "growthFreeCashFlow": "growth_free_cash_flow",
+                    "growthOtherInvestingActivites": "growth_other_investing_activites",
+                    "growthOtherFinancingActivites": "growth_other_financing_activites",
+                }
+            )
+            .astype(
+                {
+                    "symbol": "str",
+                    "date": "datetime64[ns]",
+                    "period": "str",
+                    "calendar_year": "int",
+                    "growth_net_income": "float",
+                    "growth_depreciation_and_amortization": "float",
+                    "growth_stock_based_compensation": "float",
+                    "growth_change_in_working_capital": "float",
+                    "growth_accounts_receivables": "float",
+                    "growth_inventory": "float",
+                    "growth_accounts_payables": "float",
+                    "growth_other_working_capital": "float",
+                    "growth_other_non_cash_items": "float",
+                    "growth_net_cash_provided_by_operating_activities": "float",
+                    "growth_investments_in_property_plant_and_equipment": "float",
+                    "growth_acquisitions_net": "float",
+                    "growth_purchases_of_investments": "float",
+                    "growth_sales_maturities_of_investments": "float",
+                    "growth_net_cash_used_for_investing_activities": "float",
+                    "growth_debt_repayment": "float",
+                    "growth_common_stock_issued": "float",
+                    "growth_common_stock_repurchased": "float",
+                    "growth_deferred_income_tax": "float",
+                    "growth_dividends_paid": "float",
+                    "growth_net_cash_used_provided_by_financing_activities": "float",
+                    "growth_effect_of_forex_changes_on_cash": "float",
+                    "growth_net_change_in_cash": "float",
+                    "growth_cash_at_end_of_period": "float",
+                    "growth_cash_at_beginning_of_period": "float",
+                    "growth_operating_cash_flow": "float",
+                    "growth_capital_expenditure": "float",
+                    "growth_free_cash_flow": "float",
+                    "growth_other_investing_activites": "float",
+                }
+            )
+            .sort_values("date", ascending=True)
+            .reset_index(drop=True)
+        )
+
+    ##############################
+    # Financial Score
+    ##############################
+    def financial_score(self, symbol: str) -> FinancialScore:
+        """
+        Retrieves the financial score for a given symbol.
+
+        Args:
+            symbol (str): The symbol of the company.
+
+        Returns:
+            FinancialScore: An object containing the financial score data.
+
+        Raises:
+            ValueError: If the symbol is invalid.
+        """
+        url = "v4/score"
+        params = {"symbol": symbol, "apikey": self.api_key}
+
+        try:
+            response = self.get_request(url, params)[0]
+        except IndexError:
+            raise ValueError("Invalid symbol")
+
+        data_dict = {
+            "symbol": str(response["symbol"]),
+            "altman_z_score": float(response["altmanZScore"]),
+            "piotroski_score": int(response["piotroskiScore"]),
+            "working_capital": int(response["workingCapital"]),
+            "total_assets": int(response["totalAssets"]),
+            "retained_earnings": int(response["retainedEarnings"]),
+            "ebit": int(response["ebit"]),
+            "market_cap": int(response["marketCap"]),
+            "total_liabilities": int(response["totalLiabilities"]),
+            "revenue": int(response["revenue"]),
+        }
+
+        return FinancialScore(**data_dict)
 
     ##############################
     # Ratios TTM
     ##############################
     def ratios_ttm(self, symbol: str) -> Ratios:
         """
-        Retrieves the TTM (Trailing Twelve Months) financial ratios for the given stock symbol.
+        Retrieves the trailing twelve months (TTM) financial ratios for a given symbol.
 
         Args:
-            symbol (str): The stock symbol to retrieve the ratios for.
+            symbol (str): The symbol of the company.
 
         Returns:
-            Ratios: A Ratios object containing the TTM financial ratios for the given stock symbol.
+            Ratios: An instance of the Ratios class containing the TTM financial ratios.
 
-        Examples:
-            >>> fmp = FmpStatementAnalysis()
-            >>> ratios = fmp.ratios_ttm("AAPL")
-            >>> print(ratios)
-            Ratios(symbol='AAPL', dividend_yield_ttm=0.02, dividend_yield_percentage_ttm=2.0, pe_ratio_ttm=20.7,
-            peg_ratio_ttm=1.4, payout_ratio_ttm=0.5, current_ratio_ttm=1.4, quick_ratio_ttm=1.0, cash_ratio_ttm=1.0,
-            days_of_sales_outstanding_ttm=10.2, days_of_inventory_outstanding_ttm=10.2, operating_cycle_ttm=10.2,
-            days_of_payables_outstanding_ttm=10.2, cash_conversion_cycle_ttm=10.2, gross_profit_margin_ttm=0.24,
-            operating_profit_margin_ttm=0.14, pretax_profit_margin_ttm=0.14, net_profit_margin_ttm=0.14,
-            effective_tax_rate_ttm=0.14, return_on_assets_ttm=0.14, return_on_equity_ttm=0.14,
-            return_on_capital_employed_ttm=0.14, net_income_per_ebt_ttm=0.14, ebt_per_ebit_ttm=0.14,
-            ebit_per_revenue_ttm=0.14, debt_ratio_ttm=0.14, debt_equity_ratio_ttm=0.14,
-            longTermDebtToCapitalizationTTM": "longTermDebtToCapitalization_ttm",
-            "totalDebtToCapitalizationTTM": "total_debt_to_capitalization_ttm", "interestCoverageTTM": "interest_coverage_ttm",
-            "cashFlowToDebtRatioTTM": "cash_flow_to_debt_ratio_ttm", "totalDebtToEquityTTM": "total_debt_to_equity_ttm",)
-
+        Raises:
+            ValueError: If the symbol is invalid.
         """
-
         url = f"v3/ratios-ttm/{symbol}"
         params = {"apikey": self.api_key}
-        response = self.get_request(url, params)
 
-        data_df = (
-            pd.DataFrame(response)
-            .rename(
-                columns={
-                    "dividendYielTTM": "dividend_yield_ttm",
-                    "dividendYielPercentageTTM": "dividend_yield_percentage_ttm",
-                    "peRatioTTM": "pe_ratio_ttm",
-                    "pegRatioTTM": "peg_ratio_ttm",
-                    "payoutRatioTTM": "payout_ratio_ttm",
-                    "currentRatioTTM": "current_ratio_ttm",
-                    "quickRatioTTM": "quick_ratio_ttm",
-                    "cashRatioTTM": "cash_ratio_ttm",
-                    "daysOfSalesOutstandingTTM": "days_of_sales_outstanding_ttm",
-                    "daysOfInventoryOutstandingTTM": "days_of_inventory_outstanding_ttm",
-                    "operatingCycleTTM": "operating_cycle_ttm",
-                    "daysOfPayablesOutstandingTTM": "days_of_payables_outstanding_ttm",
-                    "cashConversionCycleTTM": "cash_conversion_cycle_ttm",
-                    "grossProfitMarginTTM": "gross_profit_margin_ttm",
-                    "operatingProfitMarginTTM": "operating_profit_margin_ttm",
-                    "pretaxProfitMarginTTM": "pretax_profit_margin_ttm",
-                    "netProfitMarginTTM": "net_profit_margin_ttm",
-                    "effectiveTaxRateTTM": "effective_tax_rate_ttm",
-                    "returnOnAssetsTTM": "return_on_assets_ttm",
-                    "returnOnEquityTTM": "return_on_equity_ttm",
-                    "returnOnCapitalEmployedTTM": "return_on_capital_employed_ttm",
-                    "netIncomePerEBTTTM": "net_income_per_ebt_ttm",
-                    "ebtPerEbitTTM": "ebt_per_ebit_ttm",
-                    "ebitPerRevenueTTM": "ebit_per_revenue_ttm",
-                    "debtRatioTTM": "debt_ratio_ttm",
-                    "debtEquityRatioTTM": "debt_equity_ratio_ttm",
-                    "longTermDebtToCapitalizationTTM": "longterm_debt_to_capitalization_ttm",
-                    "totalDebtToCapitalizationTTM": "total_debt_to_capitalization_ttm",
-                    "interestCoverageTTM": "interest_coverage_ttm",
-                    "cashFlowToDebtRatioTTM": "cash_flow_to_debt_ratio_ttm",
-                    "companyEquityMultiplierTTM": "company_equity_multiplier_ttm",
-                    "receivablesTurnoverTTM": "receivables_turnover_ttm",
-                    "payablesTurnoverTTM": "payables_turnover_ttm",
-                    "inventoryTurnoverTTM": "inventory_turnover_ttm",
-                    "fixedAssetTurnoverTTM": "fixed_asset_turnover_ttm",
-                    "assetTurnoverTTM": "asset_turnover_ttm",
-                    "operatingCashFlowPerShareTTM": "operating_cash_flow_per_share_ttm",
-                    "freeCashFlowPerShareTTM": "free_cash_flow_per_share_ttm",
-                    "cashPerShareTTM": "cash_per_share_ttm",
-                    "operatingCashFlowSalesRatioTTM": "operating_cash_flow_sales_ratio_ttm",
-                    "freeCashFlowOperatingCashFlowRatioTTM": "free_cash_flow_operating_cash_flow_ratio_ttm",
-                    "cashFlowCoverageRatiosTTM": "cash_flow_coverage_ratios_ttm",
-                    "shortTermCoverageRatiosTTM": "short_term_coverage_ratios_ttm",
-                    "capitalExpenditureCoverageRatioTTM": "capital_expenditure_coverage_ratio_ttm",
-                    "dividendPaidAndCapexCoverageRatioTTM": "dividend_paid_and_capex_coverage_ratio_ttm",
-                    "priceBookValueRatioTTM": "price_book_value_ratio_ttm",
-                    "priceToBookRatioTTM": "price_to_book_ratio_ttm",
-                    "priceToSalesRatioTTM": "price_to_sales_ratio_ttm",
-                    "priceEarningsRatioTTM": "price_earnings_ratio_ttm",
-                    "priceToFreeCashFlowsRatioTTM": "price_to_free_cash_flows_ratio_ttm",
-                    "priceToOperatingCashFlowsRatioTTM": "price_to_operating_cash_flows_ratio_ttm",
-                    "priceCashFlowRatioTTM": "price_cash_flow_ratio_ttm",
-                    "priceEarningsToGrowthRatioTTM": "price_earnings_to_growth_ratio_ttm",
-                    "priceSalesRatioTTM": "price_sales_ratio_ttm",
-                    "enterpriseValueMultipleTTM": "enterprise_value_multiple_ttm",
-                    "priceFairValueTTM": "price_fair_value_ttm",
-                    "dividendPerShareTTM": "dividend_per_share_ttm",
-                }
-            )
-            .astype(
-                {
-                    "dividend_yield_ttm": "float",
-                    "dividend_yield_percentage_ttm": "float",
-                    "pe_ratio_ttm": "float",
-                    "peg_ratio_ttm": "float",
-                    "payout_ratio_ttm": "float",
-                    "current_ratio_ttm": "float",
-                    "quick_ratio_ttm": "float",
-                    "cash_ratio_ttm": "float",
-                    "days_of_sales_outstanding_ttm": "float",
-                    "days_of_inventory_outstanding_ttm": "float",
-                    "operating_cycle_ttm": "float",
-                    "days_of_payables_outstanding_ttm": "float",
-                    "cash_conversion_cycle_ttm": "float",
-                    "gross_profit_margin_ttm": "float",
-                    "operating_profit_margin_ttm": "float",
-                    "pretax_profit_margin_ttm": "float",
-                    "net_profit_margin_ttm": "float",
-                    "effective_tax_rate_ttm": "float",
-                    "return_on_assets_ttm": "float",
-                    "return_on_equity_ttm": "float",
-                    "return_on_capital_employed_ttm": "float",
-                    "net_income_per_ebt_ttm": "float",
-                    "ebt_per_ebit_ttm": "float",
-                    "ebit_per_revenue_ttm": "float",
-                    "debt_ratio_ttm": "float",
-                    "debt_equity_ratio_ttm": "float",
-                    "longterm_debt_to_capitalization_ttm": "float",
-                    "total_debt_to_capitalization_ttm": "float",
-                    "interest_coverage_ttm": "float",
-                    "cash_flow_to_debt_ratio_ttm": "float",
-                    "company_equity_multiplier_ttm": "float",
-                    "receivables_turnover_ttm": "float",
-                    "payables_turnover_ttm": "float",
-                    "inventory_turnover_ttm": "float",
-                    "fixed_asset_turnover_ttm": "float",
-                    "asset_turnover_ttm": "float",
-                    "operating_cash_flow_per_share_ttm": "float",
-                    "free_cash_flow_per_share_ttm": "float",
-                    "cash_per_share_ttm": "float",
-                    "operating_cash_flow_sales_ratio_ttm": "float",
-                    "free_cash_flow_operating_cash_flow_ratio_ttm": "float",
-                    "cash_flow_coverage_ratios_ttm": "float",
-                    "short_term_coverage_ratios_ttm": "float",
-                    "capital_expenditure_coverage_ratio_ttm": "float",
-                    "dividend_paid_and_capex_coverage_ratio_ttm": "float",
-                    "price_book_value_ratio_ttm": "float",
-                    "price_to_book_ratio_ttm": "float",
-                    "price_to_sales_ratio_ttm": "float",
-                    "price_earnings_ratio_ttm": "float",
-                    "price_to_free_cash_flows_ratio_ttm": "float",
-                    "price_to_operating_cash_flows_ratio_ttm": "float",
-                    "price_cash_flow_ratio_ttm": "float",
-                    "price_earnings_to_growth_ratio_ttm": "float",
-                    "price_sales_ratio_ttm": "float",
-                    "enterprise_value_multiple_ttm": "float",
-                    "price_fair_value_ttm": "float",
-                    "dividend_per_share_ttm": "float",
-                }
-            )
-            .iloc[0]
-        )
+        try:
+            response = self.get_request(url, params)[0]
+        except IndexError:
+            raise ValueError("Invalid symbol")
 
-        return Ratios(**data_df.to_dict())
+        data_dict = {
+            "dividend_yield_ttm": float(response.get("dividendYielTTM", 0)),
+            "dividend_yield_percentage_ttm": float(
+                response.get("dividendYielPercentageTTM", 0)
+            ),
+            "pe_ratio_ttm": float(response.get("peRatioTTM", 0)),
+            "peg_ratio_ttm": float(response.get("pegRatioTTM", 0)),
+            "payout_ratio_ttm": float(response.get("payoutRatioTTM", 0)),
+            "current_ratio_ttm": float(response.get("currentRatioTTM", 0)),
+            "quick_ratio_ttm": float(response.get("quickRatioTTM", 0)),
+            "cash_ratio_ttm": float(response.get("cashRatioTTM", 0)),
+            "days_of_sales_outstanding_ttm": float(
+                response.get("daysOfSalesOutstandingTTM", 0)
+            ),
+            "days_of_inventory_outstanding_ttm": float(
+                response.get("daysOfInventoryOutstandingTTM", 0)
+            ),
+            "operating_cycle_ttm": float(response.get("operatingCycleTTM", 0)),
+            "days_of_payables_outstanding_ttm": float(
+                response.get("daysOfPayablesOutstandingTTM", 0)
+            ),
+            "cash_conversion_cycle_ttm": float(
+                response.get("cashConversionCycleTTM", 0)
+            ),
+            "gross_profit_margin_ttm": float(response.get("grossProfitMarginTTM", 0)),
+            "operating_profit_margin_ttm": float(
+                response.get("operatingProfitMarginTTM", 0)
+            ),
+            "pretax_profit_margin_ttm": float(response.get("pretaxProfitMarginTTM", 0)),
+            "net_profit_margin_ttm": float(response.get("netProfitMarginTTM", 0)),
+            "effective_tax_rate_ttm": float(response.get("effectiveTaxRateTTM", 0)),
+            "return_on_assets_ttm": float(response.get("returnOnAssetsTTM", 0)),
+            "return_on_equity_ttm": float(response.get("returnOnEquityTTM", 0)),
+            "return_on_capital_employed_ttm": float(
+                response.get("returnOnCapitalEmployedTTM", 0)
+            ),
+            "net_income_per_ebt_ttm": float(response.get("netIncomePerEBTTTM", 0)),
+            "ebt_per_ebit_ttm": float(response.get("ebtPerEbitTTM", 0)),
+            "ebit_per_revenue_ttm": float(response.get("ebitPerRevenueTTM", 0)),
+            "debt_ratio_ttm": float(response.get("debtRatioTTM", 0)),
+            "debt_equity_ratio_ttm": float(response.get("debtEquityRatioTTM", 0)),
+            "longterm_debt_to_capitalization_ttm": float(
+                response.get("longTermDebtToCapitalizationTTM", 0)
+            ),
+            "total_debt_to_capitalization_ttm": float(
+                response.get("totalDebtToCapitalizationTTM", 0)
+            ),
+            "interest_coverage_ttm": float(response.get("interestCoverageTTM", 0)),
+            "cash_flow_to_debt_ratio_ttm": float(
+                response.get("cashFlowToDebtRatioTTM", 0)
+            ),
+            "company_equity_multiplier_ttm": float(
+                response.get("companyEquityMultiplierTTM", 0)
+            ),
+            "receivables_turnover_ttm": float(
+                response.get("receivablesTurnoverTTM", 0)
+            ),
+            "payables_turnover_ttm": float(response.get("payablesTurnoverTTM", 0)),
+            "inventory_turnover_ttm": float(response.get("inventoryTurnoverTTM", 0)),
+            "fixed_asset_turnover_ttm": float(response.get("fixedAssetTurnoverTTM", 0)),
+            "asset_turnover_ttm": float(response.get("assetTurnoverTTM", 0)),
+            "operating_cash_flow_per_share_ttm": float(
+                response.get("operatingCashFlowPerShareTTM", 0)
+            ),
+            "free_cash_flow_per_share_ttm": float(
+                response.get("freeCashFlowPerShareTTM", 0)
+            ),
+            "cash_per_share_ttm": float(response.get("cashPerShareTTM", 0)),
+            "operating_cash_flow_sales_ratio_ttm": float(
+                response.get("operatingCashFlowSalesRatioTTM", 0)
+            ),
+            "free_cash_flow_operating_cash_flow_ratio_ttm": float(
+                response.get("freeCashFlowOperatingCashFlowRatioTTM", 0)
+            ),
+            "cash_flow_coverage_ratios_ttm": float(
+                response.get("cashFlowCoverageRatiosTTM", 0)
+            ),
+            "short_term_coverage_ratios_ttm": float(
+                response.get("shortTermCoverageRatiosTTM", 0)
+            ),
+            "capital_expenditure_coverage_ratio_ttm": float(
+                response.get("capExCoverageRatioTTM", 0)
+            ),
+            "dividend_paid_and_capex_coverage_ratio_ttm": float(
+                response.get("dividendPaidAndCapExCoverageRatioTTM", 0)
+            ),
+            "price_book_value_ratio_ttm": float(
+                response.get("priceBookValueRatioTTM", 0)
+            ),
+            "price_to_book_ratio_ttm": float(response.get("priceToBookRatioTTM", 0)),
+            "price_to_sales_ratio_ttm": float(response.get("priceToSalesRatioTTM", 0)),
+            "price_earnings_ratio_ttm": float(response.get("priceEarningsRatioTTM", 0)),
+            "price_to_free_cash_flows_ratio_ttm": float(
+                response.get("priceToFreeCashFlowsRatioTTM", 0)
+            ),
+            "price_to_operating_cash_flows_ratio_ttm": float(
+                response.get("priceToOperatingCashFlowsRatioTTM", 0)
+            ),
+            "price_cash_flow_ratio_ttm": float(
+                response.get("priceCashFlowRatioTTM", 0)
+            ),
+            "price_earnings_to_growth_ratio_ttm": float(
+                response.get("priceEarningsToGrowthRatioTTM", 0)
+            ),
+            "price_sales_ratio_ttm": float(response.get("priceSalesRatioTTM", 0)),
+            "enterprise_value_multiple_ttm": float(
+                response.get("enterpriseValueMultipleTTM", 0)
+            ),
+            "price_fair_value_ttm": float(response.get("priceFairValueTTM", 0)),
+            "dividend_per_share_ttm": float(response.get("dividendPerShareTTM", 0)),
+        }
+
+        return Ratios(**data_dict)
 
     ##############################
     # Ratios
@@ -248,9 +815,31 @@ class FmpStatementAnalysis(FmpBase):
     def ratios(
         self, symbol: str, period: str = "annual", limit: int = 20
     ) -> pd.DataFrame:
+        """
+        Retrieve financial ratios for a given symbol.
+
+        Args:
+            symbol (str): The symbol of the company.
+            period (str, optional): The period of the ratios. Defaults to "annual".
+            limit (int, optional): The maximum number of ratios to retrieve. Defaults to 20.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing the financial ratios.
+
+        Raises:
+            ValueError: If the period is not 'annual' or 'quarter'.
+            ValueError: If no data is found for the symbol.
+        """
+
+        if period not in ["annual", "quarter"]:
+            raise ValueError("Period must be either 'annual' or 'quarter'")
+
         url = f"v3/ratios/{symbol}"
         params = {"period": period, "limit": limit, "apikey": self.api_key}
         response = self.get_request(url, params)
+
+        if not response:
+            raise ValueError("No data found for this symbol")
 
         return (
             pd.DataFrame(response)
@@ -333,143 +922,130 @@ class FmpStatementAnalysis(FmpBase):
     # Key Metrics TTM
     ##############################
     def key_metrics_ttm(self, symbol: str) -> KeyMetrics:
+        """
+        Retrieves the key metrics for a given symbol over the trailing twelve months (TTM).
+
+        Args:
+            symbol (str): The stock symbol for which to retrieve the key metrics.
+
+        Returns:
+            KeyMetrics: An instance of the KeyMetrics class containing the key metrics data.
+
+        Raises:
+            ValueError: If no data is found for the given symbol.
+        """
         url = f"v3/key-metrics-ttm/{symbol}"
         params = {"apikey": self.api_key}
-        response = self.get_request(url, params)
 
-        data_df = (
-            pd.DataFrame(response)
-            .rename(
-                columns={
-                    "revenuePerShareTTM": "revenue_per_share_ttm",
-                    "netIncomePerShareTTM": "net_income_per_share_ttm",
-                    "operatingCashFlowPerShareTTM": "operating_cash_flow_per_share_ttm",
-                    "freeCashFlowPerShareTTM": "free_cash_flow_per_share_ttm",
-                    "cashPerShareTTM": "cash_per_share_ttm",
-                    "bookValuePerShareTTM": "book_value_per_share_ttm",
-                    "tangibleBookValuePerShareTTM": "tangible_book_value_per_share_ttm",
-                    "shareholdersEquityPerShareTTM": "shareholders_equity_per_share_ttm",
-                    "interestDebtPerShareTTM": "interest_debt_per_share_ttm",
-                    "marketCapTTM": "market_cap_ttm",
-                    "enterpriseValueTTM": "enterprise_value_ttm",
-                    "peRatioTTM": "pe_ratio_ttm",
-                    "priceToSalesRatioTTM": "price_to_sales_ratio_ttm",
-                    "pocfratioTTM": "pocf_ratio_ttm",
-                    "pfcfRatioTTM": "pfcf_ratio_ttm",
-                    "pbRatioTTM": "pb_ratio_ttm",
-                    "ptbRatioTTM": "ptb_ratio_ttm",
-                    "evToSalesTTM": "ev_to_sales_ttm",
-                    "enterpriseValueOverEBITDATTM": "enterprise_value_over_ebitda_ttm",
-                    "evToOperatingCashFlowTTM": "ev_to_operating_cash_flow_ttm",
-                    "evToFreeCashFlowTTM": "ev_to_free_cash_flow_ttm",
-                    "earningsYieldTTM": "earnings_yield_ttm",
-                    "freeCashFlowYieldTTM": "free_cash_flow_yield_ttm",
-                    "debtToEquityTTM": "debt_to_equity_ttm",
-                    "debtToAssetsTTM": "debt_to_assets_ttm",
-                    "netDebtToEBITDATTM": "net_debt_to_ebitda_ttm",
-                    "currentRatioTTM": "current_ratio_ttm",
-                    "interestCoverageTTM": "interest_coverage_ttm",
-                    "incomeQualityTTM": "income_quality_ttm",
-                    "dividendYieldTTM": "dividend_yield_ttm",
-                    "dividendYieldPercentageTTM": "dividend_yield_percentage_ttm",
-                    "payoutRatioTTM": "payout_ratio_ttm",
-                    "salesGeneralAndAdministrativeToRevenueTTM": "sales_general_and_administrative_to_revenue_ttm",
-                    "researchAndDevelopementToRevenueTTM": "research_and_developement_to_revenue_ttm",
-                    "intangiblesToTotalAssetsTTM": "intangibles_to_total_assets_ttm",
-                    "capexToOperatingCashFlowTTM": "capex_to_operating_cash_flow_ttm",
-                    "capexToRevenueTTM": "capex_to_revenue_ttm",
-                    "capexToDepreciationTTM": "capex_to_depreciation_ttm",
-                    "stockBasedCompensationToRevenueTTM": "stock_based_compensation_to_revenue_ttm",
-                    "grahamNumberTTM": "graham_number_ttm",
-                    "roicTTM": "roic_ttm",
-                    "grahamNetNetTTM": "graham_net_net_ttm",
-                    "returnOnTangibleAssetsTTM": "return_on_tangible_assets_ttm",
-                    "workingCapitalTTM": "working_capital_ttm",
-                    "tangibleAssetValueTTM": "tangible_asset_value_ttm",
-                    "netCurrentAssetValueTTM": "net_current_asset_value_ttm",
-                    "investedCapitalTTM": "invested_capital_ttm",
-                    "averageReceivablesTTM": "average_receivables_ttm",
-                    "averagePayablesTTM": "average_payables_ttm",
-                    "averageInventoryTTM": "average_inventory_ttm",
-                    "daysSalesOutstandingTTM": "days_sales_outstanding_ttm",
-                    "daysPayablesOutstandingTTM": "days_payables_outstanding_ttm",
-                    "daysOfInventoryOnHandTTM": "days_of_inventory_on_hand_ttm",
-                    "receivablesTurnoverTTM": "receivables_turnover_ttm",
-                    "payablesTurnoverTTM": "payables_turnover_ttm",
-                    "inventoryTurnoverTTM": "inventory_turnover_ttm",
-                    "capexPerShareTTM": "capex_per_share_ttm",
-                    "roeTTM": "roe_ttm",
-                    "dividendPerShareTTM": "dividend_per_share_ttm",
-                    "debtToMarketCapTTM": "debt_to_market_cap_ttm",
-                }
-            )
-            .astype(
-                {
-                    "debt_to_market_cap_ttm": "float",
-                    "dividend_per_share_ttm": "float",
-                    "graham_net_net_ttm": "float",
-                    "return_on_tangible_assets_ttm": "float",
-                    "revenue_per_share_ttm": "float",
-                    "net_income_per_share_ttm": "float",
-                    "operating_cash_flow_per_share_ttm": "float",
-                    "free_cash_flow_per_share_ttm": "float",
-                    "cash_per_share_ttm": "float",
-                    "book_value_per_share_ttm": "float",
-                    "tangible_book_value_per_share_ttm": "float",
-                    "shareholders_equity_per_share_ttm": "float",
-                    "interest_debt_per_share_ttm": "float",
-                    "market_cap_ttm": "int",
-                    "enterprise_value_ttm": "float",
-                    "pe_ratio_ttm": "float",
-                    "price_to_sales_ratio_ttm": "float",
-                    "pocf_ratio_ttm": "float",
-                    "pfcf_ratio_ttm": "float",
-                    "pb_ratio_ttm": "float",
-                    "ptb_ratio_ttm": "float",
-                    "ev_to_sales_ttm": "float",
-                    "enterprise_value_over_ebitda_ttm": "float",
-                    "ev_to_operating_cash_flow_ttm": "float",
-                    "ev_to_free_cash_flow_ttm": "float",
-                    "earnings_yield_ttm": "float",
-                    "free_cash_flow_yield_ttm": "float",
-                    "debt_to_equity_ttm": "float",
-                    "debt_to_assets_ttm": "float",
-                    "net_debt_to_ebitda_ttm": "float",
-                    "current_ratio_ttm": "float",
-                    "interest_coverage_ttm": "float",
-                    "income_quality_ttm": "float",
-                    "dividend_yield_ttm": "float",
-                    "dividend_yield_percentage_ttm": "float",
-                    "payout_ratio_ttm": "float",
-                    "sales_general_and_administrative_to_revenue_ttm": "float",
-                    "research_and_developement_to_revenue_ttm": "float",
-                    "intangibles_to_total_assets_ttm": "float",
-                    "capex_to_operating_cash_flow_ttm": "float",
-                    "capex_to_revenue_ttm": "float",
-                    "capex_to_depreciation_ttm": "float",
-                    "stock_based_compensation_to_revenue_ttm": "float",
-                    "graham_number_ttm": "float",
-                    "roic_ttm": "float",
-                    "working_capital_ttm": "float",
-                    "tangible_asset_value_ttm": "float",
-                    "net_current_asset_value_ttm": "float",
-                    "invested_capital_ttm": "float",
-                    "average_receivables_ttm": "int",
-                    "average_payables_ttm": "int",
-                    "average_inventory_ttm": "int",
-                    "days_sales_outstanding_ttm": "float",
-                    "days_payables_outstanding_ttm": "float",
-                    "days_of_inventory_on_hand_ttm": "float",
-                    "receivables_turnover_ttm": "float",
-                    "payables_turnover_ttm": "float",
-                    "inventory_turnover_ttm": "float",
-                    "capex_per_share_ttm": "float",
-                    "roe_ttm": "float",
-                }
-            )
-        ).iloc[0]
+        try:
+            response = self.get_request(url, params)[0]
+        except IndexError:
+            raise ValueError("No data found for this symbol")
 
-        return KeyMetrics(**data_df.to_dict())
+        data_dict = {
+            "debt_to_market_cap_ttm": float(response.get("debtToMarketCapTTM", 0)),
+            "dividend_per_share_ttm": float(response.get("dividendPerShareTTM", 0)),
+            "graham_net_net_ttm": float(response.get("grahamNetNetTTM", 0)),
+            "return_on_tangible_assets_ttm": float(
+                response.get("returnOnTangibleAssetsTTM", 0)
+            ),
+            "revenue_per_share_ttm": float(response.get("revenuePerShareTTM", 0)),
+            "net_income_per_share_ttm": float(response.get("netIncomePerShareTTM", 0)),
+            "operating_cash_flow_per_share_ttm": float(
+                response.get("operatingCashFlowPerShareTTM", 0)
+            ),
+            "free_cash_flow_per_share_ttm": float(
+                response.get("freeCashFlowPerShareTTM", 0)
+            ),
+            "cash_per_share_ttm": float(response.get("cashPerShareTTM", 0)),
+            "book_value_per_share_ttm": float(response.get("bookValuePerShareTTM", 0)),
+            "tangible_book_value_per_share_ttm": float(
+                response.get("tangibleBookValuePerShareTTM", 0)
+            ),
+            "shareholders_equity_per_share_ttm": float(
+                response.get("shareholdersEquityPerShareTTM", 0)
+            ),
+            "interest_debt_per_share_ttm": float(
+                response.get("interestDebtPerShareTTM", 0)
+            ),
+            "market_cap_ttm": float(response.get("marketCapTTM", 0)),
+            "enterprise_value_ttm": float(response.get("enterpriseValueTTM", 0)),
+            "pe_ratio_ttm": float(response.get("peRatioTTM", 0)),
+            "price_to_sales_ratio_ttm": float(response.get("priceToSalesRatioTTM", 0)),
+            "pocf_ratio_ttm": float(response.get("pocfratioTTM", 0)),
+            "pfcf_ratio_ttm": float(response.get("pfcfRatioTTM", 0)),
+            "pb_ratio_ttm": float(response.get("pbRatioTTM", 0)),
+            "ptb_ratio_ttm": float(response.get("ptbRatioTTM", 0)),
+            "ev_to_sales_ttm": float(response.get("evToSalesTTM", 0)),
+            "enterprise_value_over_ebitda_ttm": float(
+                response.get("enterpriseValueOverEBITDATTM", 0)
+            ),
+            "ev_to_operating_cash_flow_ttm": float(
+                response.get("evToOperatingCashFlowTTM", 0)
+            ),
+            "ev_to_free_cash_flow_ttm": float(response.get("evToFreeCashFlowTTM", 0)),
+            "earnings_yield_ttm": float(response.get("earningsYieldTTM", 0)),
+            "free_cash_flow_yield_ttm": float(response.get("freeCashFlowYieldTTM", 0)),
+            "debt_to_equity_ttm": float(response.get("debtToEquityTTM", 0)),
+            "debt_to_assets_ttm": float(response.get("debtToAssetsTTM", 0)),
+            "net_debt_to_ebitda_ttm": float(response.get("netDebtToEBITDATTM", 0)),
+            "current_ratio_ttm": float(response.get("currentRatioTTM", 0)),
+            "interest_coverage_ttm": float(response.get("interestCoverageTTM", 0)),
+            "income_quality_ttm": float(response.get("incomeQualityTTM", 0)),
+            "dividend_yield_ttm": float(response.get("dividendYieldTTM", 0)),
+            "dividend_yield_percentage_ttm": float(
+                response.get("dividendYieldPercentageTTM", 0)
+            ),
+            "payout_ratio_ttm": float(response.get("payoutRatioTTM", 0)),
+            "sales_general_and_administrative_to_revenue_ttm": float(
+                response.get("salesGeneralAndAdministrativeToRevenueTTM", 0)
+            ),
+            "research_and_developement_to_revenue_ttm": float(
+                response.get("researchAndDevelopementToRevenueTTM", 0)
+            ),
+            "intangibles_to_total_assets_ttm": float(
+                response.get("intangiblesToTotalAssetsTTM", 0)
+            ),
+            "capex_to_operating_cash_flow_ttm": float(
+                response.get("capexToOperatingCashFlowTTM", 0)
+            ),
+            "capex_to_revenue_ttm": float(response.get("capexToRevenueTTM", 0)),
+            "capex_to_depreciation_ttm": float(
+                response.get("capexToDepreciationTTM", 0)
+            ),
+            "stock_based_compensation_to_revenue_ttm": float(
+                response.get("stockBasedCompensationToRevenueTTM", 0)
+            ),
+            "graham_number_ttm": float(response.get("grahamNumberTTM", 0)),
+            "roic_ttm": float(response.get("roicTTM", 0)),
+            "working_capital_ttm": float(response.get("workingCapitalTTM", 0)),
+            "tangible_asset_value_ttm": float(response.get("tangibleAssetValueTTM", 0)),
+            "net_current_asset_value_ttm": float(
+                response.get("netCurrentAssetValueTTM", 0)
+            ),
+            "invested_capital_ttm": float(response.get("investedCapitalTTM", 0)),
+            "average_receivables_ttm": int(response.get("averageReceivablesTTM", 0)),
+            "average_payables_ttm": int(response.get("averagePayablesTTM", 0)),
+            "average_inventory_ttm": int(response.get("averageInventoryTTM", 0)),
+            "days_payables_outstanding_ttm": float(
+                response.get("daysPayablesOutstandingTTM", 0)
+            ),
+            "days_sales_outstanding_ttm": float(
+                response.get("daysSalesOutstandingTTM", 0)
+            ),
+            "days_of_inventory_on_hand_ttm": float(
+                response.get("daysOfInventoryOnHandTTM", 0)
+            ),
+            "receivables_turnover_ttm": float(
+                response.get("receivablesTurnoverTTM", 0)
+            ),
+            "payables_turnover_ttm": float(response.get("payablesTurnoverTTM", 0)),
+            "inventory_turnover_ttm": float(response.get("inventoryTurnoverTTM", 0)),
+            "capex_per_share_ttm": float(response.get("capexPerShareTTM", 0)),
+            "roe_ttm": float(response.get("roeTTM", 0)),
+        }
+
+        return KeyMetrics(**data_dict)
 
     ##############################
     # Key Metrics
@@ -477,9 +1053,30 @@ class FmpStatementAnalysis(FmpBase):
     def key_metrics(
         self, symbol: str, period: str = "annual", limit: int = 20
     ) -> pd.DataFrame:
+        """
+        Retrieves key metrics for a given symbol.
+
+        Args:
+            symbol (str): The stock symbol.
+            period (str, optional): The period for which to retrieve the metrics. Defaults to "annual".
+            limit (int, optional): The maximum number of metrics to retrieve. Defaults to 20.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing the key metrics.
+
+        Raises:
+            ValueError: If the period is not "annual" or "quarter".
+            ValueError: If no data is found for the symbol.
+        """
+        if period not in ["annual", "quarter"]:
+            raise ValueError("Period must be either 'annual' or 'quarter'")
+
         url = f"v3/key-metrics/{symbol}"
         params = {"period": period, "limit": limit, "apikey": self.api_key}
         response = self.get_request(url, params)
+
+        if not response:
+            raise ValueError("No data found for this symbol")
 
         return (
             pd.DataFrame(response)
