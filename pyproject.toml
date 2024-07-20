@@ -28,6 +28,15 @@ pytest-mock = "^3.14.0"
 ruff = "^0.5.2"
 pre-commit = "^3.7.1"
 
+
+[tool.poetry.group.docs.dependencies]
+sphinx = "^7.4.7"
+sphinx-autobuild = "^2024.4.16"
+myst-parser = "^3.0.1"
+nbsphinx = "^0.9.4"
+sphinx-autoapi = "^3.2.0"
+sphinx-rtd-theme = "^2.0.0"
+
 [tool.ruff]
 # Exclude a variety of commonly ignored directories.
 exclude = [
