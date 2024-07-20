@@ -18,6 +18,29 @@ class FmpStatementAnalysis(FmpBase):
     # Financial Score
     ##############################
     def financial_score(self, symbol: str) -> FinancialScore:
+        """
+        Calculates the financial score for the given stock symbol.
+
+        Args:
+            symbol (str): The stock symbol to calculate the financial score for.
+
+        Returns:
+            FinancialScore: A dataclass containing the financial score metrics for the given stock symbol.
+
+        Examples:
+            >>> fmp = FmpStatementAnalysis()
+            >>> financial_score = fmp.financial_score("AAPL")
+            >>> print(financial_score)
+            FinancialScore(symbol='AAPL', altman_z_score=0.69, piotroski_score=0.75, working_capital=1.41, total_assets=195.8,
+            retained_earnings=11.3, ebit=4.3, market_cap=215.1, total_liabilities=14.8, current_ratio=1.4, quick_ratio=1.0,
+            cash_ratio=1.0, days_of_sales_outstanding=10.2, days_of_inventory_outstanding=10.2, operating_cycle=10.2,
+            days_of_payables_outstanding=10.2, cash_conversion_cycle=10.2, gross_profit_margin=0.24, operating_profit_margin=0.14,
+            pretax_profit_margin=0.14, net_profit_margin=0.14, effective_tax_rate=0.14, return_on_assets=0.14,
+            return_on_equity=0.14, return_on_capital_employed=0.14, net_income_per_ebt=0.14, ebt_per_ebit=0.14,
+            ebit_per_revenue=0.14, debt_ratio=0.14, debt_equity_ratio=0.14, longTermDebtToCapitalization=0.14,
+            total_debt_to_capitalization=0.14, interest_coverage=0.14, cash_flow_to_debt_ratio=0.14)
+        """
+
         url = "v4/score"
         params = {"symbol": symbol, "apikey": self.api_key}
         response = self.get_request(url, params)
@@ -59,6 +82,33 @@ class FmpStatementAnalysis(FmpBase):
     # Ratios TTM
     ##############################
     def ratios_ttm(self, symbol: str) -> Ratios:
+        """
+        Retrieves the TTM (Trailing Twelve Months) financial ratios for the given stock symbol.
+
+        Args:
+            symbol (str): The stock symbol to retrieve the ratios for.
+
+        Returns:
+            Ratios: A Ratios object containing the TTM financial ratios for the given stock symbol.
+
+        Examples:
+            >>> fmp = FmpStatementAnalysis()
+            >>> ratios = fmp.ratios_ttm("AAPL")
+            >>> print(ratios)
+            Ratios(symbol='AAPL', dividend_yield_ttm=0.02, dividend_yield_percentage_ttm=2.0, pe_ratio_ttm=20.7,
+            peg_ratio_ttm=1.4, payout_ratio_ttm=0.5, current_ratio_ttm=1.4, quick_ratio_ttm=1.0, cash_ratio_ttm=1.0,
+            days_of_sales_outstanding_ttm=10.2, days_of_inventory_outstanding_ttm=10.2, operating_cycle_ttm=10.2,
+            days_of_payables_outstanding_ttm=10.2, cash_conversion_cycle_ttm=10.2, gross_profit_margin_ttm=0.24,
+            operating_profit_margin_ttm=0.14, pretax_profit_margin_ttm=0.14, net_profit_margin_ttm=0.14,
+            effective_tax_rate_ttm=0.14, return_on_assets_ttm=0.14, return_on_equity_ttm=0.14,
+            return_on_capital_employed_ttm=0.14, net_income_per_ebt_ttm=0.14, ebt_per_ebit_ttm=0.14,
+            ebit_per_revenue_ttm=0.14, debt_ratio_ttm=0.14, debt_equity_ratio_ttm=0.14,
+            longTermDebtToCapitalizationTTM": "longTermDebtToCapitalization_ttm",
+            "totalDebtToCapitalizationTTM": "total_debt_to_capitalization_ttm", "interestCoverageTTM": "interest_coverage_ttm",
+            "cashFlowToDebtRatioTTM": "cash_flow_to_debt_ratio_ttm", "totalDebtToEquityTTM": "total_debt_to_equity_ttm",)
+
+        """
+
         url = f"v3/ratios-ttm/{symbol}"
         params = {"apikey": self.api_key}
         response = self.get_request(url, params)
