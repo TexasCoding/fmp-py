@@ -2,6 +2,24 @@ from dataclasses import dataclass
 
 
 @dataclass
+class AftermarketQuote:
+    symbol: str
+    ask: float
+    bid: float
+    asize: float
+    bsize: int
+    timestamp: str
+
+
+@dataclass
+class AftermarketTrade:
+    symbol: str
+    price: float
+    size: int
+    timestamp: str
+
+
+@dataclass
 class PriceChange:
     symbol: str
     day_1: float

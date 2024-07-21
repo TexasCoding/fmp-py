@@ -1,10 +1,18 @@
+from typing import List
 import pandas as pd
 from fmp_py.fmp_base import FmpBase
 import os
 import pendulum
 from dotenv import load_dotenv
 
-from fmp_py.models.quote import OtcQuote, PriceChange, Quote, SimpleQuote
+from fmp_py.models.quote import (
+    AftermarketTrade,
+    AftermarketQuote,
+    OtcQuote,
+    PriceChange,
+    Quote,
+    SimpleQuote,
+)
 
 load_dotenv()
 
@@ -26,12 +34,182 @@ def exchange_prices(self, exchange: str) -> pd.DataFrame:
     
 def stock_price_change(self, symbol: str) -> PriceChange:
     Reference: https://site.financialmodelingprep.com/developer/docs#stock-price-change-quote
+    
+def aftermarket_trade(self, symbol: str) -> AftermarketTrade:
+    Reference: https://site.financialmodelingprep.com/developer/docs#aftermarket-trade-quote
+    
+def aftermarket_quote(self, symbol: str) -> AftermarketQuote:
+    Reference: https://site.financialmodelingprep.com/developer/docs#aftermarket-quote-quote
+    
+def batch_quote(self, symbols: list) -> pd.DataFrame:
+    Reference: https://site.financialmodelingprep.com/developer/docs#batch-quote-quote
+    
+def batch_trade(self, symbols: list) -> pd.DataFrame:
+    Reference: https://site.financialmodelingprep.com/developer/docs#batch-trade-quote
 """
 
 
 class FmpQuote(FmpBase):
     def __init__(self, api_key: str = os.getenv("FMP_API_KEY")):
         super().__init__(api_key)
+
+    ###########################
+    # Batch Trade
+    ###########################
+    def batch_trade(self, symbols: List[str]) -> pd.DataFrame:
+        """
+        Retrieves batch pre and post-market trade data for the given symbols.
+
+        Args:
+            symbols (List[str]): A list of symbols for which to retrieve trade data.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing the trade data for the given symbols.
+
+        Raises:
+            ValueError: If symbols is not a list of symbols.
+            ValueError: If no data is found for the given symbols.
+        """
+
+        if isinstance(symbols, str):
+            raise ValueError("symbols must be a list of symbols")
+
+        url = f"v4/batch-pre-post-market-trade/{','.join(symbols)}"
+        params = {"apikey": self.api_key}
+        response = self.get_request(url, params)
+
+        if not response:
+            raise ValueError("No data found for the given symbols")
+
+        data_df = pd.DataFrame(response)
+
+        data_df["timestamp"] = pd.to_datetime(data_df["timestamp"], unit="ms")
+
+        return data_df.astype(
+            {
+                "timestamp": "datetime64[ns]",
+                "symbol": "str",
+                "price": "float",
+                "size": "int",
+            }
+        )
+
+    ###########################
+    # Batch Quote
+    ###########################
+    def batch_quote(self, symbols: List[str]) -> pd.DataFrame:
+        """
+        Retrieves batch pre and post-market quotes for the given symbols.
+
+        Args:
+            symbols (List[str]): A list of symbols for which to retrieve quotes.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing the batch quotes data.
+
+        Raises:
+            ValueError: If `symbols` is not a list of symbols.
+            ValueError: If no data is found for the given symbols.
+        """
+
+        if isinstance(symbols, str):
+            raise ValueError("symbols must be a list of symbols")
+
+        url = f"v4/batch-pre-post-market/{','.join(symbols)}"
+        params = {"apikey": self.api_key}
+        response = self.get_request(url, params)
+
+        if not response:
+            raise ValueError("No data found for the given symbols")
+
+        data_df = pd.DataFrame(response)
+
+        data_df["timestamp"] = pd.to_datetime(data_df["timestamp"], unit="ms")
+
+        return data_df.astype(
+            {
+                "timestamp": "datetime64[ns]",
+                "ask": "float",
+                "bid": "float",
+                "asize": "int",
+                "bsize": "int",
+                "symbol": "str",
+            }
+        )
+
+    ###########################
+    # Aftermarket Quote
+    ###########################
+    def aftermarket_quote(self, symbol: str) -> AftermarketQuote:
+        """
+        Retrieves aftermarket quote data for a given symbol.
+
+        Args:
+            symbol (str): The symbol for which to retrieve the aftermarket quote.
+
+        Returns:
+            AftermarketQuote: An instance of the AftermarketQuote class containing the quote data.
+
+        Raises:
+            ValueError: If the symbol is invalid or not found.
+
+        """
+        url = f"v4/pre-post-market/{symbol}"
+        params = {"apikey": self.api_key}
+
+        try:
+            response = self.get_request(url, params)
+            data_dict = {
+                "symbol": str(response["symbol"]),
+                "ask": float(response["ask"]),
+                "bid": float(response["bid"]),
+                "asize": int(response["asize"]),
+                "bsize": int(response["bsize"]),
+                "timestamp": pendulum.from_timestamp(
+                    response["timestamp"] / 1000, tz="America/New_York"
+                ).strftime("%Y-%m-%d %H:%M:%S"),
+            }
+        except KeyError:
+            raise ValueError(f"Invalid symbol: {symbol}")
+
+        return AftermarketQuote(**data_dict)
+
+    ###########################
+    # Aftermarket Trade
+    ###########################
+    def aftermarket_trade(self, symbol: str) -> AftermarketTrade:
+        """
+        Retrieves aftermarket trade data for a given symbol.
+
+        Args:
+            symbol (str): The symbol for which to retrieve aftermarket trade data.
+
+        Returns:
+            AftermarketTrade: An instance of the AftermarketTrade class containing the retrieved data.
+
+        Raises:
+            ValueError: If no data is found for the specified symbol.
+        """
+        url = f"v4/pre-post-market-trade/{symbol}"
+        params = {"apikey": self.api_key}
+
+        try:
+            response = self.get_request(url, params)
+            data_dict = {
+                "symbol": str(response["symbol"]),
+                "price": float(response["price"]),
+                "size": int(response["size"]),
+                "timestamp": pendulum.from_timestamp(
+                    response["timestamp"] / 1000, tz="America/New_York"
+                ).strftime("%Y-%m-%d %H:%M:%S"),
+            }
+        except KeyError:
+            raise ValueError(f"No data found for symbol: {symbol}")
+
+        if not response:
+            raise ValueError(f"No data found for symbol: {symbol}")
+
+        return AftermarketTrade(**data_dict)
 
     ###########################
     # Stock Price Change

@@ -2,7 +2,14 @@ import numpy as np
 import pytest
 import pandas as pd
 from fmp_py.fmp_quote import FmpQuote
-from fmp_py.models.quote import Quote, SimpleQuote, OtcQuote, PriceChange
+from fmp_py.models.quote import (
+    AftermarketTrade,
+    AftermarketQuote,
+    Quote,
+    SimpleQuote,
+    OtcQuote,
+    PriceChange,
+)
 
 
 @pytest.fixture
@@ -12,6 +19,76 @@ def fmp_quote():
 
 def test_fmp_quote_init(fmp_quote):
     assert isinstance(fmp_quote, FmpQuote)
+
+
+def test_fmp_quote_batch_trade(fmp_quote):
+    df = fmp_quote.batch_trade(["AAPL", "MSFT"])
+    assert isinstance(df, pd.DataFrame)
+    assert isinstance(df["symbol"][0], str)
+    assert isinstance(df["price"][0], np.float64)
+    assert isinstance(df["size"][0], np.int64)
+    assert isinstance(df["timestamp"][0], pd.Timestamp)
+
+
+def test_fmp_quote_batch_trade_not_list(fmp_quote):
+    with pytest.raises(ValueError):
+        fmp_quote.batch_trade("AAPL")
+
+
+def test_fmp_quote_batch_trade_invalid_symbol(fmp_quote):
+    with pytest.raises(ValueError):
+        fmp_quote.batch_trade(["INVAILD_SYMBOL"])
+
+
+def test_fmp_quote_batch_quote(fmp_quote):
+    df = fmp_quote.batch_quote(["AAPL", "MSFT"])
+    assert isinstance(df, pd.DataFrame)
+    assert isinstance(df["symbol"][0], str)
+    assert isinstance(df["ask"][0], np.float64)
+    assert isinstance(df["bid"][0], np.float64)
+    assert isinstance(df["asize"][0], np.int64)
+    assert isinstance(df["bsize"][0], np.int64)
+    assert isinstance(df["timestamp"][0], pd.Timestamp)
+
+
+def test_fmp_quote_batch_quote_not_list(fmp_quote):
+    with pytest.raises(ValueError):
+        fmp_quote.batch_quote("AAPL")
+
+
+def test_fmp_quote_batch_quote_invalid_symbol(fmp_quote):
+    with pytest.raises(ValueError):
+        fmp_quote.batch_quote(["INVALID_SYMBOL"])
+
+
+def test_fmp_quote_aftermarket_quote(fmp_quote):
+    aftermarket_quote = fmp_quote.aftermarket_quote("AAPL")
+    assert isinstance(aftermarket_quote, AftermarketQuote)
+    assert isinstance(aftermarket_quote.symbol, str)
+    assert isinstance(aftermarket_quote.ask, float)
+    assert isinstance(aftermarket_quote.asize, int)
+    assert isinstance(aftermarket_quote.bid, float)
+    assert isinstance(aftermarket_quote.bsize, int)
+    assert isinstance(aftermarket_quote.timestamp, str)
+
+
+def test_fmp_quote_aftermarket_quote_invalid_symbol(fmp_quote):
+    with pytest.raises(ValueError):
+        fmp_quote.aftermarket_quote("INVALID_SYMBOL")
+
+
+def test_fmp_quote_aftermarket_trade(fmp_quote):
+    aftermarket_trade = fmp_quote.aftermarket_trade("AAPL")
+    assert isinstance(aftermarket_trade, AftermarketTrade)
+    assert isinstance(aftermarket_trade.symbol, str)
+    assert isinstance(aftermarket_trade.price, float)
+    assert isinstance(aftermarket_trade.size, int)
+    assert isinstance(aftermarket_trade.timestamp, str)
+
+
+def test_fmp_quote_aftermarket_trade_invalid_symbol(fmp_quote):
+    with pytest.raises(ValueError):
+        fmp_quote.aftermarket_trade("INVALID_SYMBOL")
 
 
 def test_fmp_quote_stock_price_change(fmp_quote):
