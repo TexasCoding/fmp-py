@@ -17,6 +17,7 @@ requests = "^2.32.3"
 python-dotenv = "^1.0.1"
 pandas = "^2.2.2"
 requests-mock = "^1.12.1"
+pendulum = "^3.0.0"
 
 
 [tool.poetry.group.tests.dependencies]
