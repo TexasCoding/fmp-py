@@ -5,6 +5,10 @@ from fmp_py.fmp_quote import FmpQuote
 from fmp_py.models.quote import (
     AftermarketTrade,
     AftermarketQuote,
+    CryptoQuote,
+    ForexQuote,
+    FxPrice,
+    RealtimeFullPrice,
     Quote,
     SimpleQuote,
     OtcQuote,
@@ -19,6 +23,114 @@ def fmp_quote():
 
 def test_fmp_quote_init(fmp_quote):
     assert isinstance(fmp_quote, FmpQuote)
+
+
+def test_fmp_quote_fx_prices(fmp_quote):
+    df = fmp_quote.fx_prices()
+    assert isinstance(df, pd.DataFrame)
+    assert isinstance(df["ticker"][0], str)
+    assert isinstance(df["bid"][0], np.float64)
+    assert isinstance(df["ask"][0], np.float64)
+    assert isinstance(df["open"][0], np.float64)
+    assert isinstance(df["low"][0], np.float64)
+    assert isinstance(df["high"][0], np.float64)
+    assert isinstance(df["changes"][0], np.float64)
+    assert isinstance(df["date"][0], pd.Timestamp)
+
+
+def test_fmp_quote_fx_prices_no_results(fmp_quote):
+    with pytest.raises(ValueError):
+        fmp_quote.fx_prices() == []
+
+
+def test_fmp_quote_fx_price(fmp_quote):
+    fx_price = fmp_quote.fx_price("EURUSD")
+    assert isinstance(fx_price, FxPrice)
+    assert fx_price.ticker == "EUR/USD"
+    assert isinstance(fx_price.ticker, str)
+    assert isinstance(fx_price.bid, float)
+    assert isinstance(fx_price.ask, float)
+    assert isinstance(fx_price.open, float)
+    assert isinstance(fx_price.low, float)
+    assert isinstance(fx_price.high, float)
+    assert isinstance(fx_price.changes, float)
+    assert isinstance(fx_price.date, str)
+
+
+def test_fmp_quote_fx_price_invalid_symbol(fmp_quote):
+    with pytest.raises(ValueError):
+        fmp_quote.fx_price("INVALID_SYMBOL")
+
+
+def test_fmp_quote_all_live_full_stock_prices(fmp_quote):
+    df = fmp_quote.all_live_full_stock_prices()
+    assert isinstance(df, pd.DataFrame)
+    assert isinstance(df["symbol"][0], str)
+    assert isinstance(df["ask_price"][0], np.float64)
+    assert isinstance(df["ask_size"][0], np.int64)
+    assert isinstance(df["bid_price"][0], np.float64)
+    assert isinstance(df["bid_size"][0], np.int64)
+    assert isinstance(df["last_sale_price"][0], np.float64)
+    assert isinstance(df["last_sale_size"][0], np.int64)
+    assert isinstance(df["last_sale_time"][0], pd.Timestamp)
+    assert isinstance(df["fmp_last"][0], np.float64)
+    assert isinstance(df["last_updated"][0], pd.Timestamp)
+
+
+def test_fmp_quote_all_live_full_stock_prices_no_results(fmp_quote):
+    with pytest.raises(ValueError):
+        fmp_quote.all_live_full_stock_prices() == []
+
+
+def test_fmp_quote_live_full_stock_price(fmp_quote):
+    quote = fmp_quote.live_full_stock_price("AAPL")
+    assert isinstance(quote, RealtimeFullPrice)
+    assert quote.symbol == "AAPL"
+    assert isinstance(quote.symbol, str)
+    assert isinstance(quote.ask_price, float)
+    assert isinstance(quote.ask_size, int)
+    assert isinstance(quote.bid_price, float)
+    assert isinstance(quote.bid_size, int)
+    assert isinstance(quote.last_sale_price, float)
+    assert isinstance(quote.last_sale_size, int)
+    assert isinstance(quote.last_sale_time, str)
+    assert isinstance(quote.fmp_last, float)
+    assert isinstance(quote.last_updated, str)
+
+
+def test_fmp_quote_live_full_stock_price_invalid_symbol(fmp_quote):
+    with pytest.raises(ValueError):
+        fmp_quote.live_full_stock_price("INVALID_SYMBOL")
+
+
+def test_fmp_quote_last_crypto(fmp_quote):
+    quote = fmp_quote.last_crypto("BTCUSD")
+    assert isinstance(quote, CryptoQuote)
+    assert quote.symbol == "BTCUSD"
+    assert isinstance(quote.symbol, str)
+    assert isinstance(quote.price, float)
+    assert isinstance(quote.size, float)
+    assert isinstance(quote.timestamp, str)
+
+
+def test_fmp_quote_last_crypto_invalid_symbol(fmp_quote):
+    with pytest.raises(ValueError):
+        fmp_quote.last_crypto("INVALID_SYMBOL")
+
+
+def test_fmp_quote_last_forex(fmp_quote):
+    quote = fmp_quote.last_forex("EURUSD")
+    assert isinstance(quote, ForexQuote)
+    assert quote.symbol == "EURUSD"
+    assert isinstance(quote.symbol, str)
+    assert isinstance(quote.bid, float)
+    assert isinstance(quote.ask, float)
+    assert isinstance(quote.timestamp, str)
+
+
+def test_fmp_quote_last_forex_invalid_symbol(fmp_quote):
+    with pytest.raises(ValueError):
+        fmp_quote.last_forex("INVALID_SYMBOL")
 
 
 def test_fmp_quote_batch_trade(fmp_quote):

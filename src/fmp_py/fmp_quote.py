@@ -8,9 +8,13 @@ from dotenv import load_dotenv
 from fmp_py.models.quote import (
     AftermarketTrade,
     AftermarketQuote,
+    ForexQuote,
+    FxPrice,
+    CryptoQuote,
     OtcQuote,
     PriceChange,
     Quote,
+    RealtimeFullPrice,
     SimpleQuote,
 )
 
@@ -46,12 +50,278 @@ def batch_quote(self, symbols: list) -> pd.DataFrame:
     
 def batch_trade(self, symbols: list) -> pd.DataFrame:
     Reference: https://site.financialmodelingprep.com/developer/docs#batch-trade-quote
+    
+def last_forex(self, symbol: str) -> ForexQuote:
+    Reference: https://site.financialmodelingprep.com/developer/docs#last-forex-quote
+    
+def last_crypto(self, symbol: str) -> CryptoQuote:
+    Reference: https://site.financialmodelingprep.com/developer/docs#last-crypto-quote
+    
+def live_full_stock_price(self, symbol: str) -> Quote:
+    Reference: https://site.financialmodelingprep.com/developer/docs#real-time-full-price-quote
+    
+def all_live_full_stock_prices(self) -> pd.DataFrame:
+    Reference: https://site.financialmodelingprep.com/developer/docs#all-realtime-full-prices-quote
+    
+def fx_price(self, symbol: str) -> FxPrice:
+    Reference: https://site.financialmodelingprep.com/developer/docs#fx-price-quote
+    
+def fx_prices(self) -> pd.DataFrame:
+    Reference: https://site.financialmodelingprep.com/developer/docs#all-fx-prices-quote
 """
 
 
 class FmpQuote(FmpBase):
     def __init__(self, api_key: str = os.getenv("FMP_API_KEY")):
         super().__init__(api_key)
+
+    ##########################
+    # FX Prices
+    ##########################
+    def fx_prices(self) -> pd.DataFrame:
+        """
+        Retrieves foreign exchange prices from the API and returns them as a pandas DataFrame.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing the foreign exchange prices.
+        """
+        url = "v3/fx"
+        params = {"apikey": self.api_key}
+        response = self.get_request(url, params)
+
+        if not response:
+            raise ValueError("Error retrieving data")
+
+        data_df = pd.DataFrame(response).astype(
+            {
+                "ticker": "str",
+                "bid": "float",
+                "ask": "float",
+                "open": "float",
+                "high": "float",
+                "low": "float",
+                "changes": "float",
+                "date": "datetime64[ns]",
+            }
+        )
+
+        return data_df.sort_values(by="ticker", ascending=True).reset_index(drop=True)
+
+    ###########################
+    # FX Prices
+    ###########################
+    def fx_price(self, symbol: str) -> FxPrice:
+        """
+        Retrieves the foreign exchange price for a given symbol.
+
+        Args:
+            symbol (str): The symbol of the foreign exchange.
+
+        Returns:
+            FxPrice: An instance of the FxPrice class containing the retrieved data.
+
+        Raises:
+            ValueError: If there is an error retrieving the data.
+        """
+        url = f"v3/fx/{symbol}"
+        params = {"apikey": self.api_key}
+
+        try:
+            response = self.get_request(url, params)[0]
+        except IndexError:
+            raise ValueError("Error retrieving data")
+
+        data_dict = {
+            "ticker": str(response["ticker"]),
+            "ask": float(response["ask"]),
+            "bid": float(response["bid"]),
+            "open": float(response["open"]),
+            "low": float(response["low"]),
+            "high": float(response["high"]),
+            "changes": float(response["changes"]),
+            "date": pendulum.parse(response["date"]).strftime("%Y-%m-%d %H:%M:%S"),
+        }
+
+        return FxPrice(**data_dict)
+
+    ###########################
+    # All Live Full Stock Prices
+    ###########################
+    def all_live_full_stock_prices(self) -> pd.DataFrame:
+        """
+        Retrieves all live full stock prices from the API.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing the live full stock prices.
+        """
+        url = "v3/stock/full/real-time-price"
+        params = {"apikey": self.api_key}
+
+        response = self.get_request(url, params)
+
+        if not response:
+            raise ValueError("Error retrieving data")
+
+        data_df = pd.DataFrame(response).rename(
+            columns={
+                "symbol": "symbol",
+                "volume": "volume",
+                "askPrice": "ask_price",
+                "askSize": "ask_size",
+                "bidPrice": "bid_price",
+                "bidSize": "bid_size",
+                "lastSalePrice": "last_sale_price",
+                "lastSaleSize": "last_sale_size",
+                "lastSaleTime": "last_sale_time",
+                "fmpLast": "fmp_last",
+                "lastUpdated": "last_updated",
+            }
+        )
+
+        data_df["last_sale_time"] = pd.to_datetime(data_df["last_sale_time"], unit="ms")
+        data_df["last_updated"] = pd.to_datetime(data_df["last_updated"], unit="ms")
+
+        return (
+            data_df.astype(
+                {
+                    "symbol": "str",
+                    "volume": "int",
+                    "ask_price": "float",
+                    "ask_size": "int",
+                    "bid_price": "float",
+                    "bid_size": "int",
+                    "last_sale_price": "float",
+                    "last_sale_size": "int",
+                    "last_sale_time": "datetime64[ns]",
+                    "fmp_last": "float",
+                    "last_updated": "datetime64[ns]",
+                }
+            )
+            .sort_values(["symbol"], ascending=True)
+            .reset_index(drop=True)
+        )
+
+    ###########################
+    # Live Full Stock Price
+    ###########################
+    def live_full_stock_price(self, symbol: str) -> RealtimeFullPrice:
+        """
+        Retrieves the real-time full stock price for a given symbol.
+
+        Args:
+            symbol (str): The stock symbol.
+
+        Returns:
+            RealtimeFullPrice: An instance of the RealtimeFullPrice class containing the retrieved data.
+
+        Raises:
+            ValueError: If there is an error retrieving the data.
+        """
+        url = f"v3/stock/full/real-time-price/{symbol}"
+        params = {"apikey": self.api_key}
+
+        try:
+            response = self.get_request(url, params)[0]
+        except IndexError as e:
+            raise ValueError(f"Error retrieving data: {e}")
+
+        data_dict = {
+            "symbol": str(response["symbol"]),
+            "volume": int(response["volume"]),
+            "ask_price": float(response["askPrice"]),
+            "ask_size": int(response["askSize"]),
+            "bid_price": float(response["bidPrice"]),
+            "bid_size": int(response["bidSize"]),
+            "last_sale_price": float(response["lastSalePrice"]),
+            "last_sale_size": int(response["lastSaleSize"]),
+            "last_sale_time": pendulum.from_timestamp(
+                response["lastSaleTime"] / 1000, tz="America/New_York"
+            ).strftime("%Y-%m-%d %H:%M:%S"),
+            "fmp_last": float(response["fmpLast"]),
+            "last_updated": pendulum.from_timestamp(
+                response["lastUpdated"] / 1000, tz="America/New_York"
+            ).strftime("%Y-%m-%d %H:%M:%S"),
+        }
+
+        return RealtimeFullPrice(**data_dict)
+
+    ###########################
+    # Last Crypto
+    ###########################
+    def last_crypto(self, symbol: str) -> CryptoQuote:
+        """
+        Retrieves the last quote for a given cryptocurrency symbol.
+
+        Args:
+            symbol (str): The symbol of the cryptocurrency.
+
+        Returns:
+            CryptoQuote: An instance of the CryptoQuote class representing the last quote.
+
+        Raises:
+            ValueError: If there is an error retrieving the data or if no data is found for the symbol.
+        """
+
+        url = f"v4/crypto/last/{symbol}"
+        params = {"apikey": self.api_key}
+        try:
+            response = self.get_request(url, params)
+        except Exception as e:
+            raise ValueError(f"Error retrieving data: {e}")
+
+        if not response:
+            raise ValueError(f"No data found for symbol: {symbol}")
+
+        print(response["size"])
+
+        data_dict = {
+            "symbol": str(response["symbol"]),
+            "price": float(response["price"]),
+            "size": float(response["size"]),
+            "timestamp": pendulum.from_timestamp(
+                response["timestamp"] / 1000, tz="America/New_York"
+            ).strftime("%Y-%m-%d %H:%M:%S"),
+        }
+
+        return CryptoQuote(**data_dict)
+
+    ###########################
+    # Last Forex
+    ###########################
+    def last_forex(self, symbol: str) -> ForexQuote:
+        """
+        Retrieves the last forex quote for the given symbol.
+
+        Args:
+            symbol (str): The symbol of the forex pair.
+
+        Returns:
+            ForexQuote: An instance of the ForexQuote class representing the last forex quote.
+
+        Raises:
+            ValueError: If no data is found for the given symbol.
+        """
+        url = f"v4/forex/last/{symbol}"
+        params = {"apikey": self.api_key}
+
+        try:
+            response = self.get_request(url, params)
+        except Exception as e:
+            raise ValueError(f"Error retrieving data: {e}")
+
+        if not response:
+            raise ValueError("No data found for the given symbol")
+
+        data_dict = {
+            "symbol": str(response["symbol"]),
+            "ask": float(response["ask"]),
+            "bid": float(response["bid"]),
+            "timestamp": pendulum.from_timestamp(
+                response["timestamp"], tz="America/New_York"
+            ).strftime("%Y-%m-%d %H:%M:%S"),
+        }
+
+        return ForexQuote(**data_dict)
 
     ###########################
     # Batch Trade

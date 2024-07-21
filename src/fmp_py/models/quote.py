@@ -2,6 +2,49 @@ from dataclasses import dataclass
 
 
 @dataclass
+class FxPrice:
+    ticker: str
+    bid: float
+    ask: float
+    open: float
+    low: float
+    high: float
+    changes: float
+    date: str
+
+
+@dataclass
+class RealtimeFullPrice:
+    symbol: str
+    volume: int
+    ask_price: float
+    ask_size: int
+    bid_price: float
+    bid_size: int
+    last_sale_price: float
+    last_sale_size: int
+    last_sale_time: int
+    fmp_last: float
+    last_updated: int
+
+
+@dataclass
+class CryptoQuote:
+    symbol: str
+    price: float
+    size: float
+    timestamp: str
+
+
+@dataclass
+class ForexQuote:
+    symbol: str
+    ask: float
+    bid: int
+    timestamp: str
+
+
+@dataclass
 class AftermarketQuote:
     symbol: str
     ask: float
