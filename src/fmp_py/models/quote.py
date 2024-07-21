@@ -2,6 +2,22 @@ from dataclasses import dataclass
 
 
 @dataclass
+class PriceChange:
+    symbol: str
+    day_1: float
+    day_5: float
+    month_1: float
+    month_3: float
+    month_6: float
+    ytd: float
+    year_1: float
+    year_3: float
+    year_5: float
+    year_10: float
+    max: float
+
+
+@dataclass
 class OtcQuote:
     prev_close: float
     high: float

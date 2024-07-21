@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 import pandas as pd
 from fmp_py.fmp_quote import FmpQuote
-from fmp_py.models.quote import Quote, SimpleQuote, OtcQuote
+from fmp_py.models.quote import Quote, SimpleQuote, OtcQuote, PriceChange
 
 
 @pytest.fixture
@@ -12,6 +12,28 @@ def fmp_quote():
 
 def test_fmp_quote_init(fmp_quote):
     assert isinstance(fmp_quote, FmpQuote)
+
+
+def test_fmp_quote_stock_price_change(fmp_quote):
+    price_change = fmp_quote.stock_price_change("AAPL")
+    assert isinstance(price_change, PriceChange)
+    assert isinstance(price_change.symbol, str)
+    assert isinstance(price_change.day_1, float)
+    assert isinstance(price_change.day_5, float)
+    assert isinstance(price_change.month_1, float)
+    assert isinstance(price_change.month_3, float)
+    assert isinstance(price_change.month_6, float)
+    assert isinstance(price_change.ytd, float)
+    assert isinstance(price_change.year_1, float)
+    assert isinstance(price_change.year_3, float)
+    assert isinstance(price_change.year_5, float)
+    assert isinstance(price_change.year_10, float)
+    assert isinstance(price_change.max, float)
+
+
+def test_fmp_quote_price_change_invalid_symbol(fmp_quote):
+    with pytest.raises(ValueError):
+        fmp_quote.stock_price_change("INVALID_SYMBOL")
 
 
 def test_fmp_quote_exchange_prices(fmp_quote):

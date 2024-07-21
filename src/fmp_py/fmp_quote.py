@@ -4,7 +4,7 @@ import os
 import pendulum
 from dotenv import load_dotenv
 
-from fmp_py.models.quote import OtcQuote, Quote, SimpleQuote
+from fmp_py.models.quote import OtcQuote, PriceChange, Quote, SimpleQuote
 
 load_dotenv()
 
@@ -23,12 +23,53 @@ def otc_quote(self, symbol: str) -> OtcQuote:
 
 def exchange_prices(self, exchange: str) -> pd.DataFrame:
     Reference: https://site.financialmodelingprep.com/developer/docs#exchange-prices-quote
+    
+def stock_price_change(self, symbol: str) -> PriceChange:
+    Reference: https://site.financialmodelingprep.com/developer/docs#stock-price-change-quote
 """
 
 
 class FmpQuote(FmpBase):
     def __init__(self, api_key: str = os.getenv("FMP_API_KEY")):
         super().__init__(api_key)
+
+    ###########################
+    # Stock Price Change
+    ###########################
+    def stock_price_change(self, symbol: str) -> PriceChange:
+        """
+        Retrieves the price change information for a given stock symbol.
+
+        Args:
+            symbol (str): The stock symbol for which to retrieve the price change information.
+
+        Returns:
+            PriceChange: An object containing the price change information for the specified stock symbol.
+
+        Raises:
+            ValueError: If no data is found for the specified stock symbol.
+        """
+        url = f"v3/stock-price-change/{symbol}"
+        params = {"apikey": self.api_key}
+        try:
+            response = self.get_request(url, params)[0]
+        except IndexError:
+            raise ValueError(f"No data found for symbol: {symbol}")
+
+        return PriceChange(
+            symbol=str(response["symbol"]),
+            day_1=float(response["1D"]),
+            day_5=float(response["5D"]),
+            month_1=float(response["1M"]),
+            month_3=float(response["3M"]),
+            month_6=float(response["6M"]),
+            ytd=float(response["ytd"]),
+            year_1=float(response["1Y"]),
+            year_3=float(response["3Y"]),
+            year_5=float(response["5Y"]),
+            year_10=float(response["10Y"]),
+            max=float(response["max"]),
+        )
 
     ###########################
     # Exchange Prices
