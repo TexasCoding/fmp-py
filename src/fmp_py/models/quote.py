@@ -2,6 +2,26 @@ from dataclasses import dataclass
 
 
 @dataclass
+class OtcQuote:
+    prev_close: float
+    high: float
+    low: float
+    open: float
+    volume: int
+    last_sale_price: float
+    fmp_last: float
+    last_updated: str
+    symbol: str
+
+
+@dataclass
+class SimpleQuote:
+    symbol: str
+    price: float
+    volume: int
+
+
+@dataclass
 class Quote:
     symbol: str
     name: str

@@ -1,24 +1,184 @@
+import pandas as pd
 from fmp_py.fmp_base import FmpBase
 import os
 import pendulum
 from dotenv import load_dotenv
 
-from fmp_py.models.quote import Quote
+from fmp_py.models.quote import OtcQuote, Quote, SimpleQuote
 
 load_dotenv()
 
 """
-def full_quote(self, symbol: str):
+def full_quote(self, symbol: str) -> Quote:
     Reference: https://site.financialmodelingprep.com/developer/docs#full-quote-quote
 
-def quote_order(self, symbol: str):
+def quote_order(self, symbol: str) -> Quote:
     Reference: https://site.financialmodelingprep.com/developer/docs#quote-order-quote
+    
+def simple_quote(self, symbol: str) -> SimpleQuote:
+    Reference: https://site.financialmodelingprep.com/developer/docs#simple-quote-quote
+    
+def otc_quote(self, symbol: str) -> OtcQuote:
+    Reference: https://site.financialmodelingprep.com/developer/docs#otc-quote-quote
+
+def exchange_prices(self, exchange: str) -> pd.DataFrame:
+    Reference: https://site.financialmodelingprep.com/developer/docs#exchange-prices-quote
 """
 
 
 class FmpQuote(FmpBase):
     def __init__(self, api_key: str = os.getenv("FMP_API_KEY")):
         super().__init__(api_key)
+
+    ###########################
+    # Exchange Prices
+    ###########################
+    def exchange_prices(self, exchange: str) -> pd.DataFrame:
+        url = f"v3/quotes/{exchange}"
+        params = {"apikey": self.api_key}
+
+        response = self.get_request(url, params)
+
+        if not response:
+            raise ValueError("No data found for the given exchange.")
+
+        data_df = pd.DataFrame(response)
+
+        data_df["marketCap"] = data_df["marketCap"].fillna(0)
+        data_df["volume"] = data_df["volume"].fillna(0)
+        data_df["avgVolume"] = data_df["avgVolume"].fillna(0)
+        data_df["sharesOutstanding"] = data_df["sharesOutstanding"].fillna(0)
+        data_df["earningsAnnouncement"] = pd.to_datetime(
+            data_df["earningsAnnouncement"].fillna("1970-02-28T21:00:00.000+0000"),
+            format="%Y-%m-%dT%H:%M:%S.%f%z",
+        ).dt.tz_convert(None)
+        data_df["timestamp"] = pd.to_datetime(data_df["timestamp"], unit="s")
+
+        return (
+            data_df.rename(
+                columns={
+                    "symbol": "symbol",
+                    "name": "name",
+                    "price": "price",
+                    "changesPercentage": "change_percentage",
+                    "change": "change",
+                    "dayLow": "day_low",
+                    "dayHigh": "day_high",
+                    "yearHigh": "year_high",
+                    "yearLow": "year_low",
+                    "marketCap": "market_cap",
+                    "priceAvg50": "price_avg_50",
+                    "priceAvg200": "price_avg_200",
+                    "exchange": "exchange",
+                    "volume": "volume",
+                    "avgVolume": "avg_volume",
+                    "open": "open",
+                    "previousClose": "previous_close",
+                    "eps": "eps",
+                    "pe": "pe",
+                    "earningsAnnouncement": "earnings_date",
+                    "sharesOutstanding": "shares_outstanding",
+                    "timestamp": "datetime",
+                }
+            )
+            .astype(
+                {
+                    "symbol": "str",
+                    "name": "str",
+                    "price": "float",
+                    "change_percentage": "float",
+                    "change": "float",
+                    "day_low": "float",
+                    "day_high": "float",
+                    "year_high": "float",
+                    "year_low": "float",
+                    "market_cap": "int",
+                    "price_avg_50": "float",
+                    "price_avg_200": "float",
+                    "exchange": "str",
+                    "volume": "int",
+                    "avg_volume": "int",
+                    "open": "float",
+                    "previous_close": "float",
+                    "eps": "float",
+                    "pe": "float",
+                    "earnings_date": "datetime64[ms]",
+                    "shares_outstanding": "int",
+                    "datetime": "datetime64[ns]",
+                }
+            )
+            .fillna(0)
+            .sort_values(by="symbol", ascending=True)
+            .reset_index(drop=True)
+        )
+
+    ###########################
+    # OTC Quote
+    ###########################
+    def otc_quote(self, symbol: str) -> OtcQuote:
+        """
+        Retrieves real-time OTC quote for a given symbol.
+
+        Args:
+            symbol (str): The symbol for which to retrieve the quote.
+
+        Returns:
+            OtcQuote: An instance of the OtcQuote class containing the quote information.
+
+        Raises:
+            ValueError: If no data is found for the given symbol.
+        """
+        url = f"v3/otc/real-time-price/{symbol}"
+        params = {"apikey": self.api_key}
+
+        try:
+            response = self.get_request(url, params)[0]
+        except IndexError:
+            raise ValueError(f"No data found for symbol: {symbol}")
+
+        return OtcQuote(
+            prev_close=float(response["prevClose"]),
+            high=float(response["high"]),
+            low=float(response["low"]),
+            open=float(response["open"]),
+            volume=int(response["volume"]),
+            last_sale_price=float(response["lastSalePrice"]),
+            fmp_last=float(response["fmpLast"]),
+            last_updated=pendulum.parse(response["lastUpdated"]).strftime(
+                "%Y-%m-%d %H:%M:%S"
+            ),
+            symbol=str(response["symbol"]),
+        )
+
+    ###########################
+    # Simple Quote
+    ###########################
+    def simple_quote(self, symbol: str) -> SimpleQuote:
+        """
+        Retrieves a simple quote for the specified symbol.
+
+        Args:
+            symbol (str): The symbol of the stock or security.
+
+        Returns:
+            SimpleQuote: An instance of the SimpleQuote class containing the symbol, price, and volume.
+
+        Raises:
+            ValueError: If the symbol is invalid.
+
+        """
+        url = f"v3/quote-short/{symbol}"
+        params = {"apikey": self.api_key}
+        try:
+            response = self.get_request(url, params)[0]
+        except IndexError:
+            raise ValueError(f"Invalid symbol: {symbol}")
+
+        return SimpleQuote(
+            symbol=str(response["symbol"]),
+            price=float(response["price"]),
+            volume=int(response["volume"]),
+        )
 
     ###########################
     # Quote Order
