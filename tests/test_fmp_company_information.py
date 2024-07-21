@@ -7,6 +7,7 @@ from fmp_py.models.company_information import (
     CompanyCoreInfo,
     CompanyMarketCap,
     CompanyProfile,
+    StockPeers,
 )
 
 
@@ -17,6 +18,30 @@ def fmp_company_information():
 
 def test_fmp_company_information_init(fmp_company_information):
     assert isinstance(fmp_company_information, FmpCompanyInformation)
+
+
+def test_fmp_company_information_stock_peers(fmp_company_information):
+    stock_peers = fmp_company_information.stock_peers("AAPL")
+    assert isinstance(stock_peers, StockPeers)
+    assert isinstance(stock_peers.symbol, str)
+    assert isinstance(stock_peers.peers_list, list)
+
+
+def test_fmp_company_information_stock_peers_invalid_symbol(fmp_company_information):
+    with pytest.raises(ValueError):
+        fmp_company_information.stock_peers("INVALID_SYMBOL")
+
+
+def test_fmp_company_information_company_outlook(fmp_company_information):
+    company_outlook = fmp_company_information.company_outlook("AAPL")
+    assert isinstance(company_outlook, dict)
+
+
+def test_fmp_company_information_company_outlook_invalid_symbol(
+    fmp_company_information,
+):
+    with pytest.raises(ValueError):
+        fmp_company_information.company_outlook("INVALID_SYMBOL")
 
 
 def test_fmp_company_information_company_profile(fmp_company_information):

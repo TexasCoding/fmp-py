@@ -11,6 +11,7 @@ from fmp_py.models.company_information import (
     CompanyCoreInfo,
     CompanyMarketCap,
     CompanyProfile,
+    StockPeers,
 )
 
 from datetime import datetime
@@ -81,12 +82,74 @@ def executive_compensation(self, symbol: str) -> pd.DataFrame:
     
 def company_profile(self, symbol: str) -> CompanyProfile:
     Reference: https://site.financialmodelingprep.com/developer/docs#company-profile-company-information
+    
+def company_outlook(self, symbol: str) -> pd.DataFrame:
+    Reference: https://site.financialmodelingprep.com/developer/docs#company-outlook-company-information
+    
+def stock_peers(self, symbol: str) -> StockPeers:
+    Reference: https://site.financialmodelingprep.com/developer/docs#stock-peers-company-information
 """
 
 
 class FmpCompanyInformation(FmpBase):
     def __init__(self, api_key: str = os.getenv("FMP_API_KEY")):
         super().__init__(api_key)
+
+    ############################
+    # Stock Peers
+    ############################
+    def stock_peers(self, symbol: str) -> StockPeers:
+        """
+        Retrieves a list of stock peers for the given symbol.
+
+        Args:
+            symbol (str): The symbol of the stock.
+
+        Returns:
+            StockPeers: An instance of the StockPeers class containing the symbol and a list of peers.
+
+        Raises:
+            ValueError: If no stock peers are found for the given symbol.
+        """
+        url = "v4/stock_peers"
+        params = {"symbol": symbol, "apikey": self.api_key}
+
+        try:
+            response = self.get_request(url=url, params=params)[0]
+        except IndexError:
+            raise ValueError("No stock peers found for the given symbol.")
+
+        data_dict = {
+            "symbol": response["symbol"],
+            "peers_list": response["peersList"],
+        }
+
+        return StockPeers(**data_dict)
+
+    ############################
+    # Company Outlook
+    ############################
+    def company_outlook(self, symbol: str) -> dict:
+        """
+        Retrieves the company outlook for the given symbol.
+
+        Args:
+            symbol (str): The stock symbol of the company.
+
+        Returns:
+            dict: The company outlook information.
+
+        Raises:
+            ValueError: If no company outlook is found for the given symbol.
+        """
+        url = "v4/company-outlook"
+        params = {"symbol": symbol, "apikey": self.api_key}
+        response = self.get_request(url=url, params=params)
+
+        if not response["profile"]:
+            raise ValueError("No company outlook found for the given symbol.")
+
+        return response
 
     ############################
     # All available exchanges
@@ -754,6 +817,9 @@ class FmpCompanyInformation(FmpBase):
 
         return data_df.sort_values(by="year", ascending=True).reset_index(drop=True)
 
+    ############################
+    # Company Profile
+    ############################
     def company_profile(self, symbol: str) -> CompanyProfile:
         """
         Retrieves the company profile information for a given symbol symbol.

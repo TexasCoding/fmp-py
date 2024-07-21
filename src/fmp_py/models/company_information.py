@@ -2,6 +2,12 @@ from dataclasses import dataclass
 
 
 @dataclass
+class StockPeers:
+    symbol: str
+    peers_list: list[str]
+
+
+@dataclass
 class CompanyCoreInfo:
     cik: str
     symbol: str
