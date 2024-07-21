@@ -7,7 +7,7 @@ readme = "README.md"
 
 homepage = "https://pypi.org/project/fmp-py/"
 repository = "https://github.com/TexasCoding/fmp-py"
-documentation = "https://github.com/TexasCoding/fmp-py"
+documentation = "https://fmp-py.readthedocs.io/en/latest/index.html"
 
 packages = [{include = "fmp_py", from = "src"}]
 
