@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fmp-py"
-version = "0.0.8"
+version = "0.0.9"
 description = ""
 authors = ["TexasCoding <jeff10278@me.com>"]
 readme = "README.md"
