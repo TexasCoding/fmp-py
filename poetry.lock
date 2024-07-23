@@ -1691,13 +1691,13 @@ test = ["cython (>=3.0)", "defusedxml (>=0.7.1)", "pytest (>=8.0)", "setuptools 
 
 [[package]]
 name = "sphinx-autoapi"
-version = "3.2.0"
+version = "3.2.1"
 description = "Sphinx API documentation generator"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "sphinx_autoapi-3.2.0-py2.py3-none-any.whl", hash = "sha256:da67902137adc3541e55817d73a827ad51c41b2e68d6c298b9f7c26d3e23e744"},
-    {file = "sphinx_autoapi-3.2.0.tar.gz", hash = "sha256:f80580ff50ec7a8640dc9d0c3c40eaacd3a715bb72c7ab780e4e504c1d0759fb"},
+    {file = "sphinx_autoapi-3.2.1-py2.py3-none-any.whl", hash = "sha256:72fe556abc579528a46494f4fcbeaeaaf3e0b031f6514f7b496f6c36754c5430"},
+    {file = "sphinx_autoapi-3.2.1.tar.gz", hash = "sha256:1f9d56b3a98d5653d1fad5644abeed2c042cec304a126ef72c236dae4af16b90"},
 ]
 
 [package.dependencies]
@@ -1863,13 +1863,13 @@ test = ["pytest"]
 
 [[package]]
 name = "starlette"
-version = "0.38.0"
+version = "0.38.1"
 description = "The little ASGI library that shines."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "starlette-0.38.0-py3-none-any.whl", hash = "sha256:dd58f5854ca4fc476710e48d61b29fa4ff3639d42604a786f9d2091e64b95c7e"},
-    {file = "starlette-0.38.0.tar.gz", hash = "sha256:1ac2291e946a56bb5ca929dbb2332fc0dfd1e609c7e4d4f2056925cc0442874e"},
+    {file = "starlette-0.38.1-py3-none-any.whl", hash = "sha256:42688a287165bd6acc53068457b5cbf28a3204110b704930411728a633f0f7b8"},
+    {file = "starlette-0.38.1.tar.gz", hash = "sha256:890e89d9b1b367bad6fd11a6e191f40d03504df1ff55fd15674a3b35a122990e"},
 ]
 
 [package.dependencies]
