@@ -18,12 +18,118 @@ def balance_sheet_statements(self, symbol: str, period: str = "annual", limit: i
     
 def cashflow_statements(self, symbol: str, period: str = "annual", limit: int = 20) -> pd.DataFrame:
     Reference: https://site.financialmodelingprep.com/developer/docs#cashflow-statements-financial-statements
+    
+def income_statements_as_reported(self, symbol: str, period: str = "annual", limit: int = 20) -> pd.DataFrame:
+    Reference: https://site.financialmodelingprep.com/developer/docs#income-statements-as-reported-financial-statements
 """
 
 
 class FmpFinancialStatements(FmpBase):
     def __init__(self, api_key: str = os.getenv("FMP_API_KEY")):
         super().__init__(api_key)
+
+    ############################
+    # Income Statements as Reported
+    ############################
+    def income_statements_as_reported(
+        self, symbol: str, period: str = "annual", limit: int = 20
+    ) -> pd.DataFrame:
+        """
+        Retrieves the income statements for a given symbol as reported by the company.
+
+        Args:
+            symbol (str): The symbol of the company.
+            period (str, optional): The period of the income statements. Allowed values are "annual" and "quarter". Defaults to "annual".
+            limit (int, optional): The maximum number of income statements to retrieve. Defaults to 20.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing the income statements data.
+
+        Raises:
+            ValueError: If an invalid period is provided.
+            ValueError: If no data is found for the provided symbol.
+        """
+
+        periods_allowed = ["annual", "quarter"]
+
+        if period not in periods_allowed:
+            raise ValueError(f"Invalid period. Allowed periods: {periods_allowed}")
+
+        url = f"v3/income-statement-as-reported/{symbol}"
+        params = {"period": period, "limit": limit}
+        response = self.get_request(url, params)
+
+        if not response:
+            raise ValueError("No data found for the provided symbol.")
+
+        data_df = (
+            pd.DataFrame(response)
+            .fillna(0)
+            .rename(
+                columns={
+                    "date": "date",
+                    "symbol": "symbol",
+                    "period": "period",
+                    "revenuefromcontractwithcustomerexcludingassessedtax": "revenue_from_contract_with_customer_excluding_assessed_tax",
+                    "costofgoodsandservicessold": "cost_of_goods_and_services_sold",
+                    "grossprofit": "gross_profit",
+                    "researchanddevelopmentexpense": "research_and_development_expense",
+                    "sellinggeneralandadministrativeexpense": "selling_general_and_administrative_expense",
+                    "operatingexpenses": "operating_expenses",
+                    "operatingincomeloss": "operating_income_loss",
+                    "nonoperatingincomeexpense": "non_operating_income_expense",
+                    "incomelossfromcontinuingoperationsbeforeincometaxesextraordinaryitemsnoncontrollinginterest": "income_loss_from_continuing_operations_before_income_taxes_extraordinary_items_non_controlling_interest",
+                    "incometaxexpensebenefit": "income_tax_expense_benefit",
+                    "netincomeloss": "net_income_loss",
+                    "earningspersharebasic": "earnings_per_share_basic",
+                    "earningspersharediluted": "earnings_per_share_diluted",
+                    "weightedaveragenumberofsharesoutstandingbasic": "weighted_average_number_of_shares_outstanding_basic",
+                    "weightedaveragenumberofdilutedsharesoutstanding": "weighted_average_number_of_diluted_shares_outstanding",
+                    "othercomprehensiveincomelossforeigncurrencytransactionandtranslationadjustmentnetoftax": "other_comprehensive_income_loss_foreign_currency_transaction_and_translation_adjustment_net_of_tax",
+                    "othercomprehensiveincomelossderivativeinstrumentgainlossbeforereclassificationaftertax": "other_comprehensive_income_loss_derivative_instrument_gain_loss_before_reclassification_after_tax",
+                    "othercomprehensiveincomelossderivativeinstrumentgainlossreclassificationaftertax": "other_comprehensive_income_loss_derivative_instrument_gain_loss_reclassification_after_tax",
+                    "othercomprehensiveincomelossderivativeinstrumentgainlossafterreclassificationandtax": "other_comprehensive_income_loss_derivative_instrument_gain_loss_after_reclassification_and_tax",
+                    "othercomprehensiveincomeunrealizedholdinggainlossonsecuritiesarisingduringperiodnetoftax": "other_comprehensive_income_unrealized_holding_gain_loss_on_securities_arising_during_period_net_of_tax",
+                    "othercomprehensiveincomelossreclassificationadjustmentfromaociforsaleofsecuritiesnetoftax": "other_comprehensive_income_loss_reclassification_adjustment_from_aoci_for_sale_of_securities_net_of_tax",
+                    "othercomprehensiveincomelossavailableforsalesecuritiesadjustmentnetoftax": "other_comprehensive_income_loss_available_for_sale_securities_adjustment_net_of_tax",
+                    "othercomprehensiveincomelossnetoftaxportionattributabletoparent": "other_comprehensive_income_loss_net_of_tax_portion_attributable_to_parent",
+                    "comprehensiveincomenetoftax": "comprehensive_income_net_of_tax",
+                }
+            )
+            .astype(
+                {
+                    "date": "datetime64[ns]",
+                    "symbol": "str",
+                    "period": "str",
+                    "revenue_from_contract_with_customer_excluding_assessed_tax": "int",
+                    "cost_of_goods_and_services_sold": "int",
+                    "gross_profit": "int",
+                    "research_and_development_expense": "int",
+                    "selling_general_and_administrative_expense": "int",
+                    "operating_expenses": "int",
+                    "operating_income_loss": "int",
+                    "non_operating_income_expense": "int",
+                    "income_loss_from_continuing_operations_before_income_taxes_extraordinary_items_non_controlling_interest": "int",
+                    "income_tax_expense_benefit": "int",
+                    "net_income_loss": "int",
+                    "earnings_per_share_basic": "float",
+                    "earnings_per_share_diluted": "float",
+                    "weighted_average_number_of_shares_outstanding_basic": "int",
+                    "weighted_average_number_of_diluted_shares_outstanding": "int",
+                    "other_comprehensive_income_loss_foreign_currency_transaction_and_translation_adjustment_net_of_tax": "int",
+                    "other_comprehensive_income_loss_derivative_instrument_gain_loss_before_reclassification_after_tax": "int",
+                    "other_comprehensive_income_loss_derivative_instrument_gain_loss_reclassification_after_tax": "int",
+                    "other_comprehensive_income_loss_derivative_instrument_gain_loss_after_reclassification_and_tax": "int",
+                    "other_comprehensive_income_unrealized_holding_gain_loss_on_securities_arising_during_period_net_of_tax": "int",
+                    "other_comprehensive_income_loss_reclassification_adjustment_from_aoci_for_sale_of_securities_net_of_tax": "int",
+                    "other_comprehensive_income_loss_available_for_sale_securities_adjustment_net_of_tax": "int",
+                    "other_comprehensive_income_loss_net_of_tax_portion_attributable_to_parent": "int",
+                    "comprehensive_income_net_of_tax": "int",
+                }
+            )
+        )
+
+        return data_df.sort_values(by="date", ascending=True).reset_index(drop=True)
 
     ############################
     # Cash Flow Statements

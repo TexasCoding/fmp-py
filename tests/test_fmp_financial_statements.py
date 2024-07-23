@@ -14,6 +14,123 @@ def test_fmp_financial_statements(fmp_financial_statements):
     assert isinstance(fmp_financial_statements, FmpFinancialStatements)
 
 
+def test_fmp_financial_statements_income_statements_as_reported(
+    fmp_financial_statements,
+):
+    data = fmp_financial_statements.income_statements_as_reported("AAPL", "annual")
+    assert isinstance(data, pd.DataFrame)
+    assert not data.empty
+    assert "date" in data.columns
+    assert isinstance(data["date"][0], pd.Timestamp)
+    assert isinstance(data["symbol"][0], str)
+    assert isinstance(data["period"][0], str)
+    assert isinstance(
+        data["revenue_from_contract_with_customer_excluding_assessed_tax"][0], np.int64
+    )
+
+    assert isinstance(data["cost_of_goods_and_services_sold"][0], np.int64)
+    assert isinstance(data["gross_profit"][0], np.int64)
+    assert isinstance(data["research_and_development_expense"][0], np.int64)
+    assert isinstance(data["selling_general_and_administrative_expense"][0], np.int64)
+    assert isinstance(data["operating_expenses"][0], np.int64)
+    assert isinstance(data["operating_income_loss"][0], np.int64)
+    assert isinstance(data["non_operating_income_expense"][0], np.int64)
+    assert isinstance(
+        data[
+            "income_loss_from_continuing_operations_before_income_taxes_extraordinary_items_non_controlling_interest"
+        ][0],
+        np.int64,
+    )
+    assert isinstance(data["income_tax_expense_benefit"][0], np.int64)
+    assert isinstance(data["net_income_loss"][0], np.int64)
+
+    assert isinstance(data["earnings_per_share_basic"][0], np.float64)
+    assert isinstance(data["earnings_per_share_diluted"][0], np.float64)
+    assert isinstance(
+        data["weighted_average_number_of_shares_outstanding_basic"][0], np.int64
+    )
+    assert isinstance(
+        data["weighted_average_number_of_diluted_shares_outstanding"][0], np.int64
+    )
+    assert isinstance(
+        data[
+            "other_comprehensive_income_loss_foreign_currency_transaction_and_translation_adjustment_net_of_tax"
+        ][0],
+        np.int64,
+    )
+    assert isinstance(
+        data[
+            "other_comprehensive_income_loss_derivative_instrument_gain_loss_before_reclassification_after_tax"
+        ][0],
+        np.int64,
+    )
+    assert isinstance(
+        data[
+            "other_comprehensive_income_loss_derivative_instrument_gain_loss_reclassification_after_tax"
+        ][0],
+        np.int64,
+    )
+    assert isinstance(
+        data[
+            "other_comprehensive_income_loss_derivative_instrument_gain_loss_after_reclassification_and_tax"
+        ][0],
+        np.int64,
+    )
+    assert isinstance(
+        data[
+            "other_comprehensive_income_unrealized_holding_gain_loss_on_securities_arising_during_period_net_of_tax"
+        ][0],
+        np.int64,
+    )
+    assert isinstance(
+        data[
+            "other_comprehensive_income_loss_reclassification_adjustment_from_aoci_for_sale_of_securities_net_of_tax"
+        ][0],
+        np.int64,
+    )
+
+    assert isinstance(
+        data[
+            "other_comprehensive_income_loss_available_for_sale_securities_adjustment_net_of_tax"
+        ][0],
+        np.int64,
+    )
+    assert isinstance(
+        data[
+            "other_comprehensive_income_loss_net_of_tax_portion_attributable_to_parent"
+        ][0],
+        np.int64,
+    )
+    assert isinstance(data["comprehensive_income_net_of_tax"][0], np.int64)
+
+
+def test_fmp_financial_statements_income_statements_as_reported_with_limit(
+    fmp_financial_statements,
+):
+    data = fmp_financial_statements.income_statements_as_reported(
+        "AAPL", "annual", limit=1
+    )
+    assert isinstance(data, pd.DataFrame)
+    assert not data.empty
+    assert len(data) == 1
+
+
+def test_fmp_financial_statements_income_statements_as_reported_invalid_period(
+    fmp_financial_statements,
+):
+    with pytest.raises(ValueError):
+        fmp_financial_statements.income_statements_as_reported("AAPL", "invalid")
+
+
+def test_fmp_financial_statements_income_statements_as_reported_invalid_symbol(
+    fmp_financial_statements,
+):
+    with pytest.raises(ValueError):
+        fmp_financial_statements.income_statements_as_reported(
+            "INVALID_SYMBOL", "anunual"
+        )
+
+
 def test_fmp_financial_statements_cashflow_statements(fmp_financial_statements):
     data = fmp_financial_statements.cashflow_statements("AAPL", "annual")
     assert isinstance(data, pd.DataFrame)
