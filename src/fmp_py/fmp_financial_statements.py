@@ -24,12 +24,132 @@ def income_statements_as_reported(self, symbol: str, period: str = "annual", lim
     
 def balance_sheet_statements_as_reported(self, symbol: str, period: str = "annual", limit: int = 20) -> pd.DataFrame:
     Reference: https://site.financialmodelingprep.com/developer/docs#balance-statements-as-reported-financial-statements
+    
+def cashflow_statements_as_reported(self, symbol: str, period: str = "annual", limit: int = 20) -> pd.DataFrame:
+    Reference: https://site.financialmodelingprep.com/developer/docs#cashflow-statements-as-reported-financial-statements
 """
 
 
 class FmpFinancialStatements(FmpBase):
     def __init__(self, api_key: str = os.getenv("FMP_API_KEY")):
         super().__init__(api_key)
+
+    ############################
+    # Cash Flow Statements as Reported
+    ############################
+    def cashflow_statements_as_reported(
+        self, symbol: str, period: str = "annual", limit: int = 20
+    ) -> pd.DataFrame:
+        """
+        Retrieves the cash flow statements for a given symbol as reported by the company.
+
+        Args:
+            symbol (str): The symbol of the company.
+            period (str, optional): The period of the financial statements. Defaults to "annual".
+            limit (int, optional): The maximum number of statements to retrieve. Defaults to 20.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing the cash flow statements.
+
+        Raises:
+            ValueError: If an invalid period is provided.
+            ValueError: If no data is found for the provided symbol.
+        """
+
+        periods_allowed = ["annual", "quarter"]
+        if period not in periods_allowed:
+            raise ValueError(
+                f"Invalid period. Allowed values are {', '.join(periods_allowed)}"
+            )
+
+        url = f"v3/cash-flow-statement-as-reported/{symbol}"
+        params = {"period": period, "limit": limit}
+        response = self.get_request(url, params)
+
+        if not response:
+            raise ValueError("No data found for the provided symbol.")
+
+        data_df = (
+            pd.DataFrame(response)
+            .fillna(0)
+            .rename(
+                columns={
+                    "date": "date",
+                    "symbol": "symbol",
+                    "period": "period",
+                    "cashcashequivalentsrestrictedcashandrestrictedcashequivalents": "cash_cash_equivalents_restricted_cash_and_restricted_cash_equivalents",
+                    "netincomeloss": "net_income_loss",
+                    "depreciationdepletionandamortization": "depreciation_depletion_and_amortization",
+                    "sharebasedcompensation": "share_based_compensation",
+                    "othernoncashincomeexpense": "other_non_cash_income_expense",
+                    "increasedecreaseinaccountsreceivable": "increase_decrease_in_accounts_receivable",
+                    "increasedecreaseinotherreceivables": "increase_decrease_in_other_receivables",
+                    "increasedecreaseininventories": "increase_decrease_in_inventories",
+                    "increasedecreaseinotheroperatingassets": "increase_decrease_in_other_operating_assets",
+                    "increasedecreaseinaccountspayable": "increase_decrease_in_accounts_payable",
+                    "increasedecreaseinotheroperatingliabilities": "increase_decrease_in_other_operating_liabilities",
+                    "netcashprovidedbyusedinoperatingactivities": "net_cash_provided_by_used_in_operating_activities",
+                    "paymentstoacquireavailableforsalesecuritiesdebt": "payments_to_acquire_available_for_sale_securities_debt",
+                    "proceedsfrommaturitiesprepaymentsandcallsofavailableforsalesecurities": "proceeds_from_maturities_prepayments_and_calls_of_available_for_sale_securities",
+                    "proceedsfromsaleofavailableforsalesecuritiesdebt": "proceeds_from_sale_of_available_for_sale_securities_debt",
+                    "paymentstoacquirepropertyplantandequipment": "payments_to_acquire_property_plant_and_equipment",
+                    "paymentsforproceedsfromotherinvestingactivities": "payments_for_proceeds_from_other_investing_activities",
+                    "netcashprovidedbyusedininvestingactivities": "net_cash_provided_by_used_in_investing_activities",
+                    "paymentsrelatedtotaxwithholdingforsharebasedcompensation": "payments_related_to_tax_withholding_for_share_based_compensation",
+                    "paymentsofdividends": "payments_of_dividends",
+                    "paymentsforrepurchaseofcommonstock": "payments_for_repurchase_of_common_stock",
+                    "proceedsfromissuanceoflongtermdebt": "proceeds_from_issuance_of_long_term_debt",
+                    "repaymentsoflongtermdebt": "repayments_of_long_term_debt",
+                    "proceedsfromrepaymentsofcommercialpaper": "proceeds_from_repayments_of_commercial_paper",
+                    "proceedsfrompaymentsforotherfinancingactivities": "proceeds_from_payments_for_other_financing_activities",
+                    "proceedsfromissuanceofcommonstock": "proceeds_from_issuance_of_common_stock",
+                    "paymentstoacquireotherinvestments": "payments_to_acquire_other_investments",
+                    "netcashprovidedbyusedinfinancingactivities": "net_cash_provided_by_used_in_financing_activities",
+                    "cashcashequivalentsrestrictedcashandrestrictedcashequivalentsperiodincreasedecreaseincludingexchangerateeffect": "cash_cash_equivalents_restricted_cash_and_restricted_cash_equivalents_period_increase_decrease_including_exchange_rate_effect",
+                    "incometaxespaidnet": "income_taxes_paid_net",
+                    "interestpaidnet": "interest_paid_net",
+                }
+            )
+        ).astype(
+            {
+                "date": "datetime64[ns]",
+                "symbol": "str",
+                "period": "str",
+                "cash_cash_equivalents_restricted_cash_and_restricted_cash_equivalents": "int",
+                "net_income_loss": "int",
+                "depreciation_depletion_and_amortization": "int",
+                "share_based_compensation": "int",
+                "other_non_cash_income_expense": "int",
+                "increase_decrease_in_accounts_receivable": "int",
+                "increase_decrease_in_other_receivables": "int",
+                "increase_decrease_in_inventories": "int",
+                "increase_decrease_in_other_operating_assets": "int",
+                "increase_decrease_in_accounts_payable": "int",
+                "increase_decrease_in_other_operating_liabilities": "int",
+                "net_cash_provided_by_used_in_operating_activities": "int",
+                "payments_to_acquire_available_for_sale_securities_debt": "int",
+                "proceeds_from_maturities_prepayments_and_calls_of_available_for_sale_securities": "int",
+                "proceeds_from_sale_of_available_for_sale_securities_debt": "int",
+                "payments_to_acquire_property_plant_and_equipment": "int",
+                "payments_for_proceeds_from_other_investing_activities": "int",
+                "net_cash_provided_by_used_in_investing_activities": "int",
+                "payments_related_to_tax_withholding_for_share_based_compensation": "int",
+                "payments_of_dividends": "int",
+                "payments_for_repurchase_of_common_stock": "int",
+                "proceeds_from_issuance_of_long_term_debt": "int",
+                "repayments_of_long_term_debt": "int",
+                "proceeds_from_repayments_of_commercial_paper": "int",
+                "proceeds_from_payments_for_other_financing_activities": "int",
+                "net_cash_provided_by_used_in_financing_activities": "int",
+                "proceeds_from_issuance_of_common_stock": "int",
+                "payments_to_acquire_other_investments": "int",
+                "cash_cash_equivalents_restricted_cash_and_restricted_cash_equivalents_period_increase_decrease_including_exchange_rate_effect": "int",
+                "income_taxes_paid_net": "int",
+                "interest_paid_net": "int",
+            }
+        )
+
+        return data_df.sort_values(by="date", ascending=True).reset_index(drop=True)
 
     ############################
     # Balance Sheet Statements as Reported
