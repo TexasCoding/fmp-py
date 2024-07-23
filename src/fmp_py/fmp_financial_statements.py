@@ -21,12 +21,129 @@ def cashflow_statements(self, symbol: str, period: str = "annual", limit: int = 
     
 def income_statements_as_reported(self, symbol: str, period: str = "annual", limit: int = 20) -> pd.DataFrame:
     Reference: https://site.financialmodelingprep.com/developer/docs#income-statements-as-reported-financial-statements
+    
+def balance_sheet_statements_as_reported(self, symbol: str, period: str = "annual", limit: int = 20) -> pd.DataFrame:
+    Reference: https://site.financialmodelingprep.com/developer/docs#balance-statements-as-reported-financial-statements
 """
 
 
 class FmpFinancialStatements(FmpBase):
     def __init__(self, api_key: str = os.getenv("FMP_API_KEY")):
         super().__init__(api_key)
+
+    ############################
+    # Balance Sheet Statements as Reported
+    ############################
+    def balance_sheet_statements_as_reported(
+        self, symbol: str, period: str = "annual", limit: int = 20
+    ) -> pd.DataFrame:
+        """
+        Retrieves the balance sheet statements as reported for a given symbol.
+
+        Args:
+            symbol (str): The symbol of the company.
+            period (str, optional): The period of the statements. Allowed values are "annual" and "quarter". Defaults to "annual".
+            limit (int, optional): The maximum number of statements to retrieve. Defaults to 20.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing the balance sheet statements.
+
+        Raises:
+            ValueError: If an invalid period is provided.
+            ValueError: If no data is found for the provided symbol.
+        """
+        periods_allowed = ["annual", "quarter"]
+        if period not in periods_allowed:
+            raise ValueError(f"Invalid period. Allowed periods: {periods_allowed}")
+
+        url = f"v3/balance-sheet-statement-as-reported/{symbol}"
+        params = {"period": period, "limit": limit}
+        response = self.get_request(url, params)
+
+        if not response:
+            raise ValueError("No data found for the provided symbol.")
+
+        data_df = (
+            pd.DataFrame(response)
+            .fillna(0)
+            .rename(
+                columns={
+                    "date": "date",
+                    "symbol": "symbol",
+                    "period": "period",
+                    "cashandcashequivalentsatcarryingvalue": "cash_and_cash_equivalents_at_carrying_value",
+                    "marketablesecuritiescurrent": "marketable_securities_current",
+                    "accountsreceivablenetcurrent": "accounts_receivable_net_current",
+                    "nontradereceivablescurrent": "non_trade_receivables_current",
+                    "inventorynet": "inventory_net",
+                    "otherassetscurrent": "other_assets_current",
+                    "assetscurrent": "assets_current",
+                    "marketablesecuritiesnoncurrent": "marketable_securities_non_current",
+                    "propertyplantandequipmentnet": "property_plant_and_equipment_net",
+                    "otherassetsnoncurrent": "other_assets_non_current",
+                    "assetsnoncurrent": "assets_non_current",
+                    "assets": "assets",
+                    "accountspayablecurrent": "accounts_payable_current",
+                    "otherliabilitiescurrent": "other_liabilities_current",
+                    "contractwithcustomerliabilitycurrent": "contract_with_customer_liability_current",
+                    "commercialpaper": "commercial_paper",
+                    "longtermdebtcurrent": "long_term_debt_current",
+                    "liabilitiescurrent": "liabilities_current",
+                    "longtermdebtnoncurrent": "long_term_debt_non_current",
+                    "otherliabilitiesnoncurrent": "other_liabilities_non_current",
+                    "liabilitiesnoncurrent": "liabilities_non_current",
+                    "liabilities": "liabilities",
+                    "commonstocksharesoutstanding": "common_stock_shares_outstanding",
+                    "commonstocksharesissued": "common_stock_shares_issued",
+                    "commonstocksincludingadditionalpaidincapital": "common_stocks_including_additional_paid_in_capital",
+                    "retainedearningsaccumulateddeficit": "retained_earnings_accumulated_deficit",
+                    "accumulatedothercomprehensiveincomelossnetoftax": "accumulated_other_comprehensive_income_loss_net_of_tax",
+                    "stockholdersequity": "stockholders_equity",
+                    "liabilitiesandstockholdersequity": "liabilities_and_stockholders_equity",
+                    "commonstockparorstatedvaluepershare": "common_stock_par_or_stated_value_per_share",
+                    "commonstocksharesauthorized": "common_stock_shares_authorized",
+                }
+            )
+        ).astype(
+            {
+                "date": "datetime64[ns]",
+                "symbol": "str",
+                "period": "str",
+                "cash_and_cash_equivalents_at_carrying_value": "int",
+                "marketable_securities_current": "int",
+                "accounts_receivable_net_current": "int",
+                "non_trade_receivables_current": "int",
+                "inventory_net": "int",
+                "other_assets_current": "int",
+                "assets_current": "int",
+                "marketable_securities_non_current": "int",
+                "property_plant_and_equipment_net": "int",
+                "other_assets_non_current": "int",
+                "assets_non_current": "int",
+                "assets": "int",
+                "accounts_payable_current": "int",
+                "other_liabilities_current": "int",
+                "contract_with_customer_liability_current": "int",
+                "commercial_paper": "int",
+                "long_term_debt_current": "int",
+                "liabilities_current": "int",
+                "long_term_debt_non_current": "int",
+                "other_liabilities_non_current": "int",
+                "liabilities_non_current": "int",
+                "liabilities": "int",
+                "common_stock_shares_outstanding": "int",
+                "common_stock_shares_issued": "int",
+                "common_stocks_including_additional_paid_in_capital": "int",
+                "retained_earnings_accumulated_deficit": "int",
+                "accumulated_other_comprehensive_income_loss_net_of_tax": "int",
+                "stockholders_equity": "int",
+                "liabilities_and_stockholders_equity": "int",
+                "common_stock_par_or_stated_value_per_share": "float",
+                "common_stock_shares_authorized": "int",
+            }
+        )
+
+        return data_df.sort_values(by="date", ascending=True).reset_index(drop=True)
 
     ############################
     # Income Statements as Reported

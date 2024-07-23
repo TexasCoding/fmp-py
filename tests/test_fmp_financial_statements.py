@@ -14,6 +14,84 @@ def test_fmp_financial_statements(fmp_financial_statements):
     assert isinstance(fmp_financial_statements, FmpFinancialStatements)
 
 
+def test_fmp_financial_statements_balance_sheet_statements_as_reported(
+    fmp_financial_statements,
+):
+    data = fmp_financial_statements.balance_sheet_statements_as_reported(
+        "AAPL", "annual"
+    )
+    assert isinstance(data, pd.DataFrame)
+    assert not data.empty
+    assert "date" in data.columns
+    assert isinstance(data["date"][0], pd.Timestamp)
+    assert isinstance(data["symbol"][0], str)
+    assert isinstance(data["period"][0], str)
+    assert isinstance(data["cash_and_cash_equivalents_at_carrying_value"][0], np.int64)
+
+    assert isinstance(data["marketable_securities_current"][0], np.int64)
+    assert isinstance(data["accounts_receivable_net_current"][0], np.int64)
+    assert isinstance(data["non_trade_receivables_current"][0], np.int64)
+    assert isinstance(data["inventory_net"][0], np.int64)
+    assert isinstance(data["other_assets_current"][0], np.int64)
+    assert isinstance(data["assets_current"][0], np.int64)
+    assert isinstance(data["marketable_securities_non_current"][0], np.int64)
+    assert isinstance(data["property_plant_and_equipment_net"][0], np.int64)
+    assert isinstance(data["other_assets_non_current"][0], np.int64)
+    assert isinstance(data["assets_non_current"][0], np.int64)
+
+    assert isinstance(data["assets"][0], np.int64)
+    assert isinstance(data["accounts_payable_current"][0], np.int64)
+    assert isinstance(data["other_liabilities_current"][0], np.int64)
+    assert isinstance(data["contract_with_customer_liability_current"][0], np.int64)
+    assert isinstance(data["long_term_debt_current"][0], np.int64)
+    assert isinstance(data["liabilities_current"][0], np.int64)
+    assert isinstance(data["long_term_debt_non_current"][0], np.int64)
+    assert isinstance(data["other_liabilities_non_current"][0], np.int64)
+    assert isinstance(data["liabilities_non_current"][0], np.int64)
+    assert isinstance(data["liabilities"][0], np.int64)
+
+    assert isinstance(data["common_stock_shares_outstanding"][0], np.int64)
+    assert isinstance(data["common_stock_shares_issued"][0], np.int64)
+    assert isinstance(
+        data["common_stocks_including_additional_paid_in_capital"][0], np.int64
+    )
+    assert isinstance(data["retained_earnings_accumulated_deficit"][0], np.int64)
+    assert isinstance(
+        data["accumulated_other_comprehensive_income_loss_net_of_tax"][0], np.int64
+    )
+    assert isinstance(data["stockholders_equity"][0], np.int64)
+    assert isinstance(data["liabilities_and_stockholders_equity"][0], np.int64)
+    assert isinstance(data["common_stock_par_or_stated_value_per_share"][0], np.float64)
+    assert isinstance(data["common_stock_shares_authorized"][0], np.int64)
+
+
+def test_fmp_financial_statements_balance_sheet_statements_as_reported_with_limit(
+    fmp_financial_statements,
+):
+    data = fmp_financial_statements.balance_sheet_statements_as_reported(
+        "AAPL", "annual", limit=1
+    )
+    assert isinstance(data, pd.DataFrame)
+    assert not data.empty
+    assert len(data) == 1
+
+
+def test_fmp_financial_statements_balance_sheet_statements_as_reported_invalid_period(
+    fmp_financial_statements,
+):
+    with pytest.raises(ValueError):
+        fmp_financial_statements.balance_sheet_statements_as_reported("AAPL", "invalid")
+
+
+def test_fmp_financial_statements_balance_sheet_statements_as_reported_invalid_symbol(
+    fmp_financial_statements,
+):
+    with pytest.raises(ValueError):
+        fmp_financial_statements.balance_sheet_statements_as_reported(
+            "INVALID_SYMBOL", "annual"
+        )
+
+
 def test_fmp_financial_statements_income_statements_as_reported(
     fmp_financial_statements,
 ):
