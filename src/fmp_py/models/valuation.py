@@ -2,6 +2,14 @@ from dataclasses import dataclass
 
 
 @dataclass
+class DiscountedCashFlow:
+    symbol: str
+    date: str
+    dcf: float
+    stock_price: float
+
+
+@dataclass
 class CompanyRating:
     symbol: str
     date: str
