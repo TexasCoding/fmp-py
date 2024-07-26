@@ -1003,106 +1003,176 @@ class FmpStatementAnalysis(FmpBase):
             raise ValueError("No data found for this symbol")
 
         data_dict = {
-            "debt_to_market_cap_ttm": float(response.get("debtToMarketCapTTM", 0)),
-            "dividend_per_share_ttm": float(response.get("dividendPerShareTTM", 0)),
-            "graham_net_net_ttm": float(response.get("grahamNetNetTTM", 0)),
-            "return_on_tangible_assets_ttm": float(
-                response.get("returnOnTangibleAssetsTTM", 0)
+            "debt_to_market_cap_ttm": self.clean_value(
+                response.get("debtToMarketCapTTM", 0.0), float
             ),
-            "revenue_per_share_ttm": float(response.get("revenuePerShareTTM", 0)),
-            "net_income_per_share_ttm": float(response.get("netIncomePerShareTTM", 0)),
-            "operating_cash_flow_per_share_ttm": float(
-                response.get("operatingCashFlowPerShareTTM", 0)
+            "dividend_per_share_ttm": self.clean_value(
+                response.get("dividendPerShareTTM", 0.0), float
             ),
-            "free_cash_flow_per_share_ttm": float(
-                response.get("freeCashFlowPerShareTTM", 0)
+            "graham_net_net_ttm": self.clean_value(
+                response.get("grahamNetNetTTM", 0.0), float
             ),
-            "cash_per_share_ttm": float(response.get("cashPerShareTTM", 0)),
-            "book_value_per_share_ttm": float(response.get("bookValuePerShareTTM", 0)),
-            "tangible_book_value_per_share_ttm": float(
-                response.get("tangibleBookValuePerShareTTM", 0)
+            "return_on_tangible_assets_ttm": self.clean_value(
+                response.get("returnOnTangibleAssetsTTM", 0.0), float
             ),
-            "shareholders_equity_per_share_ttm": float(
-                response.get("shareholdersEquityPerShareTTM", 0)
+            "revenue_per_share_ttm": self.clean_value(
+                response.get("revenuePerShareTTM", 0.0), float
             ),
-            "interest_debt_per_share_ttm": float(
-                response.get("interestDebtPerShareTTM", 0)
+            "net_income_per_share_ttm": self.clean_value(
+                response.get("netIncomePerShareTTM", 0.0), float
             ),
-            "market_cap_ttm": float(response.get("marketCapTTM", 0)),
-            "enterprise_value_ttm": float(response.get("enterpriseValueTTM", 0)),
-            "pe_ratio_ttm": float(response.get("peRatioTTM", 0)),
-            "price_to_sales_ratio_ttm": float(response.get("priceToSalesRatioTTM", 0)),
-            "pocf_ratio_ttm": float(response.get("pocfratioTTM", 0)),
-            "pfcf_ratio_ttm": float(response.get("pfcfRatioTTM", 0)),
-            "pb_ratio_ttm": float(response.get("pbRatioTTM", 0)),
-            "ptb_ratio_ttm": float(response.get("ptbRatioTTM", 0)),
-            "ev_to_sales_ttm": float(response.get("evToSalesTTM", 0)),
-            "enterprise_value_over_ebitda_ttm": float(
-                response.get("enterpriseValueOverEBITDATTM", 0)
+            "operating_cash_flow_per_share_ttm": self.clean_value(
+                response.get("operatingCashFlowPerShareTTM", 0.0), float
             ),
-            "ev_to_operating_cash_flow_ttm": float(
-                response.get("evToOperatingCashFlowTTM", 0)
+            "free_cash_flow_per_share_ttm": self.clean_value(
+                response.get("freeCashFlowPerShareTTM", 0.0), float
             ),
-            "ev_to_free_cash_flow_ttm": float(response.get("evToFreeCashFlowTTM", 0)),
-            "earnings_yield_ttm": float(response.get("earningsYieldTTM", 0)),
-            "free_cash_flow_yield_ttm": float(response.get("freeCashFlowYieldTTM", 0)),
-            "debt_to_equity_ttm": float(response.get("debtToEquityTTM", 0)),
-            "debt_to_assets_ttm": float(response.get("debtToAssetsTTM", 0)),
-            "net_debt_to_ebitda_ttm": float(response.get("netDebtToEBITDATTM", 0)),
-            "current_ratio_ttm": float(response.get("currentRatioTTM", 0)),
-            "interest_coverage_ttm": float(response.get("interestCoverageTTM", 0)),
-            "income_quality_ttm": float(response.get("incomeQualityTTM", 0)),
-            "dividend_yield_ttm": float(response.get("dividendYieldTTM", 0)),
-            "dividend_yield_percentage_ttm": float(
-                response.get("dividendYieldPercentageTTM", 0)
+            "cash_per_share_ttm": self.clean_value(
+                response.get("cashPerShareTTM", 0.0), float
             ),
-            "payout_ratio_ttm": float(response.get("payoutRatioTTM", 0)),
-            "sales_general_and_administrative_to_revenue_ttm": float(
-                response.get("salesGeneralAndAdministrativeToRevenueTTM", 0)
+            "book_value_per_share_ttm": self.clean_value(
+                response.get("bookValuePerShareTTM", 0.0), float
             ),
-            "research_and_developement_to_revenue_ttm": float(
-                response.get("researchAndDevelopementToRevenueTTM", 0)
+            "tangible_book_value_per_share_ttm": self.clean_value(
+                response.get("tangibleBookValuePerShareTTM", 0.0), float
             ),
-            "intangibles_to_total_assets_ttm": float(
-                response.get("intangiblesToTotalAssetsTTM", 0)
+            "shareholders_equity_per_share_ttm": self.clean_value(
+                response.get("shareholdersEquityPerShareTTM", 0.0), float
             ),
-            "capex_to_operating_cash_flow_ttm": float(
-                response.get("capexToOperatingCashFlowTTM", 0)
+            "interest_debt_per_share_ttm": self.clean_value(
+                response.get("interestDebtPerShareTTM", 0.0), float
             ),
-            "capex_to_revenue_ttm": float(response.get("capexToRevenueTTM", 0)),
-            "capex_to_depreciation_ttm": float(
-                response.get("capexToDepreciationTTM", 0)
+            "market_cap_ttm": self.clean_value(
+                response.get("marketCapTTM", 0.0), float
             ),
-            "stock_based_compensation_to_revenue_ttm": float(
-                response.get("stockBasedCompensationToRevenueTTM", 0)
+            "enterprise_value_ttm": self.clean_value(
+                response.get("enterpriseValueTTM", 0.0), float
             ),
-            "graham_number_ttm": float(response.get("grahamNumberTTM", 0)),
-            "roic_ttm": float(response.get("roicTTM", 0)),
-            "working_capital_ttm": float(response.get("workingCapitalTTM", 0)),
-            "tangible_asset_value_ttm": float(response.get("tangibleAssetValueTTM", 0)),
-            "net_current_asset_value_ttm": float(
-                response.get("netCurrentAssetValueTTM", 0)
+            "pe_ratio_ttm": self.clean_value(response.get("peRatioTTM", 0.0), float),
+            "price_to_sales_ratio_ttm": self.clean_value(
+                response.get("priceToSalesRatioTTM", 0.0), float
             ),
-            "invested_capital_ttm": float(response.get("investedCapitalTTM", 0)),
-            "average_receivables_ttm": int(response.get("averageReceivablesTTM", 0)),
-            "average_payables_ttm": int(response.get("averagePayablesTTM", 0)),
-            "average_inventory_ttm": int(response.get("averageInventoryTTM", 0)),
-            "days_payables_outstanding_ttm": float(
-                response.get("daysPayablesOutstandingTTM", 0)
+            "pocf_ratio_ttm": self.clean_value(
+                response.get("pocfratioTTM", 0.0), float
             ),
-            "days_sales_outstanding_ttm": float(
-                response.get("daysSalesOutstandingTTM", 0)
+            "pfcf_ratio_ttm": self.clean_value(
+                response.get("pfcfRatioTTM", 0.0), float
             ),
-            "days_of_inventory_on_hand_ttm": float(
-                response.get("daysOfInventoryOnHandTTM", 0)
+            "pb_ratio_ttm": self.clean_value(response.get("pbRatioTTM", 0.0), float),
+            "ptb_ratio_ttm": self.clean_value(response.get("ptbRatioTTM", 0.0), float),
+            "ev_to_sales_ttm": self.clean_value(
+                response.get("evToSalesTTM", 0.0), float
             ),
-            "receivables_turnover_ttm": float(
-                response.get("receivablesTurnoverTTM", 0)
+            "enterprise_value_over_ebitda_ttm": self.clean_value(
+                response.get("enterpriseValueOverEBITDATTM", 0.0), float
             ),
-            "payables_turnover_ttm": float(response.get("payablesTurnoverTTM", 0)),
-            "inventory_turnover_ttm": float(response.get("inventoryTurnoverTTM", 0)),
-            "capex_per_share_ttm": float(response.get("capexPerShareTTM", 0)),
-            "roe_ttm": float(response.get("roeTTM", 0)),
+            "ev_to_operating_cash_flow_ttm": self.clean_value(
+                response.get("evToOperatingCashFlowTTM", 0.0), float
+            ),
+            "ev_to_free_cash_flow_ttm": self.clean_value(
+                response.get("evToFreeCashFlowTTM", 0.0), float
+            ),
+            "earnings_yield_ttm": self.clean_value(
+                response.get("earningsYieldTTM", 0.0), float
+            ),
+            "free_cash_flow_yield_ttm": self.clean_value(
+                response.get("freeCashFlowYieldTTM", 0.0), float
+            ),
+            "debt_to_equity_ttm": self.clean_value(
+                response.get("debtToEquityTTM", 0.0), float
+            ),
+            "debt_to_assets_ttm": self.clean_value(
+                response.get("debtToAssetsTTM", 0.0), float
+            ),
+            "net_debt_to_ebitda_ttm": self.clean_value(
+                response.get("netDebtToEBITDATTM", 0.0), float
+            ),
+            "current_ratio_ttm": self.clean_value(
+                response.get("currentRatioTTM", 0.0), float
+            ),
+            "interest_coverage_ttm": self.clean_value(
+                response.get("interestCoverageTTM", 0.0), float
+            ),
+            "income_quality_ttm": self.clean_value(
+                response.get("incomeQualityTTM", 0.0), float
+            ),
+            "dividend_yield_ttm": self.clean_value(
+                response.get("dividendYieldTTM", 0.0), float
+            ),
+            "dividend_yield_percentage_ttm": self.clean_value(
+                response.get("dividendYieldPercentageTTM", 0.0), float
+            ),
+            "payout_ratio_ttm": self.clean_value(
+                response.get("payoutRatioTTM", 0.0), float
+            ),
+            "sales_general_and_administrative_to_revenue_ttm": self.clean_value(
+                response.get("salesGeneralAndAdministrativeToRevenueTTM", 0.0), float
+            ),
+            "research_and_developement_to_revenue_ttm": self.clean_value(
+                response.get("researchAndDevelopementToRevenueTTM", 0.0), float
+            ),
+            "intangibles_to_total_assets_ttm": self.clean_value(
+                response.get("intangiblesToTotalAssetsTTM", 0.0), float
+            ),
+            "capex_to_operating_cash_flow_ttm": self.clean_value(
+                response.get("capexToOperatingCashFlowTTM", 0.0), float
+            ),
+            "capex_to_revenue_ttm": self.clean_value(
+                response.get("capexToRevenueTTM", 0.0), float
+            ),
+            "capex_to_depreciation_ttm": self.clean_value(
+                response.get("capexToDepreciationTTM", 0.0), float
+            ),
+            "stock_based_compensation_to_revenue_ttm": self.clean_value(
+                response.get("stockBasedCompensationToRevenueTTM", 0.0), float
+            ),
+            "graham_number_ttm": self.clean_value(
+                response.get("grahamNumberTTM", 0.0), float
+            ),
+            "roic_ttm": self.clean_value(response.get("roicTTM", 0.0), float),
+            "working_capital_ttm": self.clean_value(
+                response.get("workingCapitalTTM", 0.0), float
+            ),
+            "tangible_asset_value_ttm": self.clean_value(
+                response.get("tangibleAssetValueTTM", 0.0), float
+            ),
+            "net_current_asset_value_ttm": self.clean_value(
+                response.get("netCurrentAssetValueTTM", 0.0), float
+            ),
+            "invested_capital_ttm": self.clean_value(
+                response.get("investedCapitalTTM", 0.0), float
+            ),
+            "average_receivables_ttm": self.clean_value(
+                response.get("averageReceivablesTTM", 0), int
+            ),
+            "average_payables_ttm": self.clean_value(
+                response.get("averagePayablesTTM", 0.0), int
+            ),
+            "average_inventory_ttm": self.clean_value(
+                response.get("averageInventoryTTM", 0), int
+            ),
+            "days_payables_outstanding_ttm": self.clean_value(
+                response.get("daysPayablesOutstandingTTM", 0.0), float
+            ),
+            "days_sales_outstanding_ttm": self.clean_value(
+                response.get("daysSalesOutstandingTTM", 0.0), float
+            ),
+            "days_of_inventory_on_hand_ttm": self.clean_value(
+                response.get("daysOfInventoryOnHandTTM", 0.0), float
+            ),
+            "receivables_turnover_ttm": self.clean_value(
+                response.get("receivablesTurnoverTTM", 0.0), float
+            ),
+            "payables_turnover_ttm": self.clean_value(
+                response.get("payablesTurnoverTTM", 0.0), float
+            ),
+            "inventory_turnover_ttm": self.clean_value(
+                response.get("inventoryTurnoverTTM", 0.0), float
+            ),
+            "capex_per_share_ttm": self.clean_value(
+                response.get("capexPerShareTTM", 0.0), float
+            ),
+            "roe_ttm": self.clean_value(response.get("roeTTM", 0.0), float),
         }
 
         return KeyMetrics(**data_dict)
