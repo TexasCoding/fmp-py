@@ -652,21 +652,27 @@ class FmpStatementAnalysis(FmpBase):
         params = {"symbol": symbol, "apikey": self.api_key}
 
         try:
-            response = self.get_request(url, params)[0]
+            response: dict = self.get_request(url, params)[0]
         except IndexError:
             raise ValueError("Invalid symbol")
 
         data_dict = {
-            "symbol": response["symbol"],
-            "altman_z_score": response.get("altmanZScore", 0),
-            "piotroski_score": response.get("piotroskiScore", 0),
-            "working_capital": response.get("workingCapital", 0),
-            "total_assets": response.get("totalAssets", 0),
-            "retained_earnings": response.get("retainedEarnings", 0),
-            "ebit": response.get("ebit", 0),
-            "market_cap": response.get("marketCap", 0),
-            "total_liabilities": response.get("totalLiabilities", 0),
-            "revenue": response.get("revenue", 0),
+            "symbol": self.clean_value(response.get("symbol", ""), str),
+            "altman_z_score": self.clean_value(
+                response.get("altmanZScore", 0.0), float
+            ),
+            "piotroski_score": self.clean_value(response.get("piotroskiScore", 0), int),
+            "working_capital": self.clean_value(response.get("workingCapital", 0), int),
+            "total_assets": self.clean_value(response.get("totalAssets", 0), int),
+            "retained_earnings": self.clean_value(
+                response.get("retainedEarnings", 0), int
+            ),
+            "ebit": self.clean_value(response.get("ebit", 0), int),
+            "market_cap": self.clean_value(response.get("marketCap", 0), int),
+            "total_liabilities": self.clean_value(
+                response.get("totalLiabilities", 0), int
+            ),
+            "revenue": self.clean_value(response.get("revenue", 0), int),
         }
 
         return FinancialScore(**data_dict)
@@ -691,120 +697,174 @@ class FmpStatementAnalysis(FmpBase):
         params = {"apikey": self.api_key}
 
         try:
-            response = self.get_request(url, params)[0]
+            response: dict = self.get_request(url, params)[0]
         except IndexError:
             raise ValueError("Invalid symbol")
 
         data_dict = {
-            "dividend_yield_ttm": float(response.get("dividendYielTTM", 0)),
-            "dividend_yield_percentage_ttm": float(
-                response.get("dividendYielPercentageTTM", 0)
+            "dividend_yield_ttm": self.clean_value(
+                response.get("dividendYielTTM", 0), float
             ),
-            "pe_ratio_ttm": float(response.get("peRatioTTM", 0)),
-            "peg_ratio_ttm": float(response.get("pegRatioTTM", 0)),
-            "payout_ratio_ttm": float(response.get("payoutRatioTTM", 0)),
-            "current_ratio_ttm": float(response.get("currentRatioTTM", 0)),
-            "quick_ratio_ttm": float(response.get("quickRatioTTM", 0)),
-            "cash_ratio_ttm": float(response.get("cashRatioTTM", 0)),
-            "days_of_sales_outstanding_ttm": float(
-                response.get("daysOfSalesOutstandingTTM", 0)
+            "dividend_yield_percentage_ttm": self.clean_value(
+                response.get("dividendYielPercentageTTM", 0), float
             ),
-            "days_of_inventory_outstanding_ttm": float(
-                response.get("daysOfInventoryOutstandingTTM", 0)
+            "pe_ratio_ttm": self.clean_value(response.get("peRatioTTM", 0), float),
+            "peg_ratio_ttm": self.clean_value(response.get("pegRatioTTM", 0), float),
+            "payout_ratio_ttm": self.clean_value(
+                response.get("payoutRatioTTM", 0), float
             ),
-            "operating_cycle_ttm": float(response.get("operatingCycleTTM", 0)),
-            "days_of_payables_outstanding_ttm": float(
-                response.get("daysOfPayablesOutstandingTTM", 0)
+            "current_ratio_ttm": self.clean_value(
+                response.get("currentRatioTTM", 0), float
             ),
-            "cash_conversion_cycle_ttm": float(
-                response.get("cashConversionCycleTTM", 0)
+            "quick_ratio_ttm": self.clean_value(
+                response.get("quickRatioTTM", 0), float
             ),
-            "gross_profit_margin_ttm": float(response.get("grossProfitMarginTTM", 0)),
-            "operating_profit_margin_ttm": float(
-                response.get("operatingProfitMarginTTM", 0)
+            "cash_ratio_ttm": self.clean_value(response.get("cashRatioTTM", 0), float),
+            "days_of_sales_outstanding_ttm": self.clean_value(
+                response.get("daysOfSalesOutstandingTTM", 0), float
             ),
-            "pretax_profit_margin_ttm": float(response.get("pretaxProfitMarginTTM", 0)),
-            "net_profit_margin_ttm": float(response.get("netProfitMarginTTM", 0)),
-            "effective_tax_rate_ttm": float(response.get("effectiveTaxRateTTM", 0)),
-            "return_on_assets_ttm": float(response.get("returnOnAssetsTTM", 0)),
-            "return_on_equity_ttm": float(response.get("returnOnEquityTTM", 0)),
-            "return_on_capital_employed_ttm": float(
-                response.get("returnOnCapitalEmployedTTM", 0)
+            "days_of_inventory_outstanding_ttm": self.clean_value(
+                response.get("daysOfInventoryOutstandingTTM", 0), float
             ),
-            "net_income_per_ebt_ttm": float(response.get("netIncomePerEBTTTM", 0)),
-            "ebt_per_ebit_ttm": float(response.get("ebtPerEbitTTM", 0)),
-            "ebit_per_revenue_ttm": float(response.get("ebitPerRevenueTTM", 0)),
-            "debt_ratio_ttm": float(response.get("debtRatioTTM", 0)),
-            "debt_equity_ratio_ttm": float(response.get("debtEquityRatioTTM", 0)),
-            "longterm_debt_to_capitalization_ttm": float(
-                response.get("longTermDebtToCapitalizationTTM", 0)
+            "operating_cycle_ttm": self.clean_value(
+                response.get("operatingCycleTTM", 0), float
             ),
-            "total_debt_to_capitalization_ttm": float(
-                response.get("totalDebtToCapitalizationTTM", 0)
+            "days_of_payables_outstanding_ttm": self.clean_value(
+                response.get("daysOfPayablesOutstandingTTM", 0), float
             ),
-            "interest_coverage_ttm": float(response.get("interestCoverageTTM", 0)),
-            "cash_flow_to_debt_ratio_ttm": float(
-                response.get("cashFlowToDebtRatioTTM", 0)
+            "cash_conversion_cycle_ttm": self.clean_value(
+                response.get("cashConversionCycleTTM", 0), float
             ),
-            "company_equity_multiplier_ttm": float(
-                response.get("companyEquityMultiplierTTM", 0)
+            "gross_profit_margin_ttm": self.clean_value(
+                response.get("grossProfitMarginTTM", 0), float
             ),
-            "receivables_turnover_ttm": float(
-                response.get("receivablesTurnoverTTM", 0)
+            "operating_profit_margin_ttm": self.clean_value(
+                response.get("operatingProfitMarginTTM", 0), float
             ),
-            "payables_turnover_ttm": float(response.get("payablesTurnoverTTM", 0)),
-            "inventory_turnover_ttm": float(response.get("inventoryTurnoverTTM", 0)),
-            "fixed_asset_turnover_ttm": float(response.get("fixedAssetTurnoverTTM", 0)),
-            "asset_turnover_ttm": float(response.get("assetTurnoverTTM", 0)),
-            "operating_cash_flow_per_share_ttm": float(
-                response.get("operatingCashFlowPerShareTTM", 0)
+            "pretax_profit_margin_ttm": self.clean_value(
+                response.get("pretaxProfitMarginTTM", 0), float
             ),
-            "free_cash_flow_per_share_ttm": float(
-                response.get("freeCashFlowPerShareTTM", 0)
+            "net_profit_margin_ttm": self.clean_value(
+                response.get("netProfitMarginTTM", 0), float
             ),
-            "cash_per_share_ttm": float(response.get("cashPerShareTTM", 0)),
-            "operating_cash_flow_sales_ratio_ttm": float(
-                response.get("operatingCashFlowSalesRatioTTM", 0)
+            "effective_tax_rate_ttm": self.clean_value(
+                response.get("effectiveTaxRateTTM", 0), float
             ),
-            "free_cash_flow_operating_cash_flow_ratio_ttm": float(
-                response.get("freeCashFlowOperatingCashFlowRatioTTM", 0)
+            "return_on_assets_ttm": self.clean_value(
+                response.get("returnOnAssetsTTM", 0), float
             ),
-            "cash_flow_coverage_ratios_ttm": float(
-                response.get("cashFlowCoverageRatiosTTM", 0)
+            "return_on_equity_ttm": self.clean_value(
+                response.get("returnOnEquityTTM", 0), float
             ),
-            "short_term_coverage_ratios_ttm": float(
-                response.get("shortTermCoverageRatiosTTM", 0)
+            "return_on_capital_employed_ttm": self.clean_value(
+                response.get("returnOnCapitalEmployedTTM", 0), float
             ),
-            "capital_expenditure_coverage_ratio_ttm": float(
-                response.get("capExCoverageRatioTTM", 0)
+            "net_income_per_ebt_ttm": self.clean_value(
+                response.get("netIncomePerEBTTTM", 0), float
             ),
-            "dividend_paid_and_capex_coverage_ratio_ttm": float(
-                response.get("dividendPaidAndCapExCoverageRatioTTM", 0)
+            "ebt_per_ebit_ttm": self.clean_value(
+                response.get("ebtPerEbitTTM", 0), float
             ),
-            "price_book_value_ratio_ttm": float(
-                response.get("priceBookValueRatioTTM", 0)
+            "ebit_per_revenue_ttm": self.clean_value(
+                response.get("ebitPerRevenueTTM", 0), float
             ),
-            "price_to_book_ratio_ttm": float(response.get("priceToBookRatioTTM", 0)),
-            "price_to_sales_ratio_ttm": float(response.get("priceToSalesRatioTTM", 0)),
-            "price_earnings_ratio_ttm": float(response.get("priceEarningsRatioTTM", 0)),
-            "price_to_free_cash_flows_ratio_ttm": float(
-                response.get("priceToFreeCashFlowsRatioTTM", 0)
+            "debt_ratio_ttm": self.clean_value(response.get("debtRatioTTM", 0), float),
+            "debt_equity_ratio_ttm": self.clean_value(
+                response.get("debtEquityRatioTTM", 0), float
             ),
-            "price_to_operating_cash_flows_ratio_ttm": float(
-                response.get("priceToOperatingCashFlowsRatioTTM", 0)
+            "longterm_debt_to_capitalization_ttm": self.clean_value(
+                response.get("longTermDebtToCapitalizationTTM", 0), float
             ),
-            "price_cash_flow_ratio_ttm": float(
-                response.get("priceCashFlowRatioTTM", 0)
+            "total_debt_to_capitalization_ttm": self.clean_value(
+                response.get("totalDebtToCapitalizationTTM", 0), float
             ),
-            "price_earnings_to_growth_ratio_ttm": float(
-                response.get("priceEarningsToGrowthRatioTTM", 0)
+            "interest_coverage_ttm": self.clean_value(
+                response.get("interestCoverageTTM", 0), float
             ),
-            "price_sales_ratio_ttm": float(response.get("priceSalesRatioTTM", 0)),
-            "enterprise_value_multiple_ttm": float(
-                response.get("enterpriseValueMultipleTTM", 0)
+            "cash_flow_to_debt_ratio_ttm": self.clean_value(
+                response.get("cashFlowToDebtRatioTTM", 0), float
             ),
-            "price_fair_value_ttm": float(response.get("priceFairValueTTM", 0)),
-            "dividend_per_share_ttm": float(response.get("dividendPerShareTTM", 0)),
+            "company_equity_multiplier_ttm": self.clean_value(
+                response.get("companyEquityMultiplierTTM", 0), float
+            ),
+            "receivables_turnover_ttm": self.clean_value(
+                response.get("receivablesTurnoverTTM", 0), float
+            ),
+            "payables_turnover_ttm": self.clean_value(
+                response.get("payablesTurnoverTTM", 0), float
+            ),
+            "inventory_turnover_ttm": self.clean_value(
+                response.get("inventoryTurnoverTTM", 0), float
+            ),
+            "fixed_asset_turnover_ttm": self.clean_value(
+                response.get("fixedAssetTurnoverTTM", 0), float
+            ),
+            "asset_turnover_ttm": self.clean_value(
+                response.get("assetTurnoverTTM", 0), float
+            ),
+            "operating_cash_flow_per_share_ttm": self.clean_value(
+                response.get("operatingCashFlowPerShareTTM", 0), float
+            ),
+            "free_cash_flow_per_share_ttm": self.clean_value(
+                response.get("freeCashFlowPerShareTTM", 0), float
+            ),
+            "cash_per_share_ttm": self.clean_value(
+                response.get("cashPerShareTTM", 0), float
+            ),
+            "operating_cash_flow_sales_ratio_ttm": self.clean_value(
+                response.get("operatingCashFlowSalesRatioTTM", 0), float
+            ),
+            "free_cash_flow_operating_cash_flow_ratio_ttm": self.clean_value(
+                response.get("freeCashFlowOperatingCashFlowRatioTTM", 0), float
+            ),
+            "cash_flow_coverage_ratios_ttm": self.clean_value(
+                response.get("cashFlowCoverageRatiosTTM", 0), float
+            ),
+            "short_term_coverage_ratios_ttm": self.clean_value(
+                response.get("shortTermCoverageRatiosTTM", 0), float
+            ),
+            "capital_expenditure_coverage_ratio_ttm": self.clean_value(
+                response.get("capExCoverageRatioTTM", 0), float
+            ),
+            "dividend_paid_and_capex_coverage_ratio_ttm": self.clean_value(
+                response.get("dividendPaidAndCapExCoverageRatioTTM", 0), float
+            ),
+            "price_book_value_ratio_ttm": self.clean_value(
+                response.get("priceBookValueRatioTTM", 0), float
+            ),
+            "price_to_book_ratio_ttm": self.clean_value(
+                response.get("priceToBookRatioTTM", 0), float
+            ),
+            "price_to_sales_ratio_ttm": self.clean_value(
+                response.get("priceToSalesRatioTTM", 0), float
+            ),
+            "price_earnings_ratio_ttm": self.clean_value(
+                response.get("priceEarningsRatioTTM", 0), float
+            ),
+            "price_to_free_cash_flows_ratio_ttm": self.clean_value(
+                response.get("priceToFreeCashFlowsRatioTTM", 0), float
+            ),
+            "price_to_operating_cash_flows_ratio_ttm": self.clean_value(
+                response.get("priceToOperatingCashFlowsRatioTTM", 0), float
+            ),
+            "price_cash_flow_ratio_ttm": self.clean_value(
+                response.get("priceCashFlowRatioTTM", 0), float
+            ),
+            "price_earnings_to_growth_ratio_ttm": self.clean_value(
+                response.get("priceEarningsToGrowthRatioTTM", 0), float
+            ),
+            "price_sales_ratio_ttm": self.clean_value(
+                response.get("priceSalesRatioTTM", 0), float
+            ),
+            "enterprise_value_multiple_ttm": self.clean_value(
+                response.get("enterpriseValueMultipleTTM", 0), float
+            ),
+            "price_fair_value_ttm": self.clean_value(
+                response.get("priceFairValueTTM", 0), float
+            ),
+            "dividend_per_share_ttm": self.clean_value(
+                response.get("dividendPerShareTTM", 0), float
+            ),
         }
 
         return Ratios(**data_dict)

@@ -363,10 +363,10 @@ class FmpValuation(FmpBase):
             raise ValueError("No data found in API response")
 
         return DiscountedCashFlow(
-            symbol=str(response.get("symbol")),
-            date=str(response.get("date")),
-            dcf=float(response.get("dcf")),
-            stock_price=float(response.get("Stock Price")),
+            symbol=self.clean_value(response.get("symbol"), str),
+            date=self.clean_value(response.get("date"), str),
+            dcf=self.clean_value(response.get("dcf"), float),
+            stock_price=self.clean_value(response.get("Stock Price"), float),
         )
 
     ############################
@@ -395,34 +395,48 @@ class FmpValuation(FmpBase):
             raise ValueError("No data found in API response")
 
         data_dict = {
-            "symbol": str(response.get("symbol")),
-            "date": str(response.get("date")),
-            "rating": str(response.get("rating")),
-            "rating_score": int(response.get("ratingScore")),
-            "rating_recommendation": str(response.get("ratingRecommendation")),
-            "rating_details_dcf_score": int(response.get("ratingDetailsDCFScore")),
-            "rating_details_dcf_recommendation": str(
-                response.get("ratingDetailsDCFRecommendation")
+            "symbol": self.clean_value(response.get("symbol"), str),
+            "date": self.clean_value(response.get("date"), str),
+            "rating": self.clean_value(response.get("rating"), str),
+            "rating_score": self.clean_value(response.get("ratingScore"), int),
+            "rating_recommendation": self.clean_value(
+                response.get("ratingRecommendation"), str
             ),
-            "rating_details_roe_score": int(response.get("ratingDetailsROEScore")),
-            "rating_details_roe_recommendation": str(
-                response.get("ratingDetailsROERecommendation")
+            "rating_details_dcf_score": self.clean_value(
+                response.get("ratingDetailsDCFScore"), int
             ),
-            "rating_details_roa_score": int(response.get("ratingDetailsROAScore")),
-            "rating_details_roa_recommendation": str(
-                response.get("ratingDetailsROARecommendation")
+            "rating_details_dcf_recommendation": self.clean_value(
+                response.get("ratingDetailsDCFRecommendation"), str
             ),
-            "rating_details_de_score": int(response.get("ratingDetailsDEScore")),
-            "rating_details_de_recommendation": str(
-                response.get("ratingDetailsDERecommendation")
+            "rating_details_roe_score": self.clean_value(
+                response.get("ratingDetailsROEScore"), int
             ),
-            "rating_details_pe_score": int(response.get("ratingDetailsPEScore")),
-            "rating_details_pe_recommendation": str(
-                response.get("ratingDetailsPERecommendation")
+            "rating_details_roe_recommendation": self.clean_value(
+                response.get("ratingDetailsROERecommendation"), str
             ),
-            "rating_details_pb_score": int(response.get("ratingDetailsPBScore")),
-            "rating_details_pb_recommendation": str(
-                response.get("ratingDetailsPBRecommendation")
+            "rating_details_roa_score": self.clean_value(
+                response.get("ratingDetailsROAScore"), int
+            ),
+            "rating_details_roa_recommendation": self.clean_value(
+                response.get("ratingDetailsROARecommendation"), str
+            ),
+            "rating_details_de_score": self.clean_value(
+                response.get("ratingDetailsDEScore"), int
+            ),
+            "rating_details_de_recommendation": self.clean_value(
+                response.get("ratingDetailsDERecommendation"), str
+            ),
+            "rating_details_pe_score": self.clean_value(
+                response.get("ratingDetailsPEScore"), int
+            ),
+            "rating_details_pe_recommendation": self.clean_value(
+                response.get("ratingDetailsPERecommendation"), str
+            ),
+            "rating_details_pb_score": self.clean_value(
+                response.get("ratingDetailsPBScore"), int
+            ),
+            "rating_details_pb_recommendation": self.clean_value(
+                response.get("ratingDetailsPBRecommendation"), str
             ),
         }
 

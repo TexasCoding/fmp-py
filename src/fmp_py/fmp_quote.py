@@ -127,21 +127,19 @@ class FmpQuote(FmpBase):
         params = {"apikey": self.api_key}
 
         try:
-            response = self.get_request(url, params)[0]
+            response: dict = self.get_request(url, params)[0]
         except IndexError:
             raise ValueError("Error retrieving data")
 
         data_dict = {
-            "ticker": str(response.get("ticker", "")),
-            "ask": float(response.get("ask", 0)),
-            "bid": float(response.get("bid", 0)),
-            "open": float(response.get("open", 0)),
-            "low": float(response.get("low", 0)),
-            "high": float(response.get("high", 0)),
-            "changes": float(response.get("changes", 0)),
-            "date": pendulum.parse(
-                response.get("date", "1970-01-01 00:00:00")
-            ).strftime("%Y-%m-%d %H:%M:%S"),
+            "ticker": self.clean_value(response.get("ticker", ""), str),
+            "ask": self.clean_value(response.get("ask", 0.0), float),
+            "bid": self.clean_value(response.get("bid", 0.0), float),
+            "open": self.clean_value(response.get("open", 0.0), float),
+            "low": self.clean_value(response.get("low", 0.0), float),
+            "high": self.clean_value(response.get("high", 0.0), float),
+            "changes": self.clean_value(response.get("changes", 0.0), float),
+            "date": pendulum.parse(response["date"]).strftime("%Y-%m-%d %H:%M:%S"),
         }
 
         return FxPrice(**data_dict)
@@ -228,18 +226,20 @@ class FmpQuote(FmpBase):
             raise ValueError(f"Error retrieving data: {e}")
 
         data_dict = {
-            "symbol": str(response["symbol"]),
-            "volume": int(response["volume"]),
-            "ask_price": float(response["askPrice"]),
-            "ask_size": int(response["askSize"]),
-            "bid_price": float(response["bidPrice"]),
-            "bid_size": int(response["bidSize"]),
-            "last_sale_price": float(response["lastSalePrice"]),
-            "last_sale_size": int(response["lastSaleSize"]),
+            "symbol": self.clean_value(response.get("symbol", ""), str),
+            "volume": self.clean_value(response.get("volume", 0), int),
+            "ask_price": self.clean_value(response.get("askPrice", 0.0), float),
+            "ask_size": self.clean_value(response.get("askSize", 0), int),
+            "bid_price": self.clean_value(response.get("bidPrice", 0.0), float),
+            "bid_size": self.clean_value(response.get("bidSize", 0), int),
+            "last_sale_price": self.clean_value(
+                response.get("lastSalePrice", 0.0), float
+            ),
+            "last_sale_size": self.clean_value(response.get("lastSaleSize", 0), int),
             "last_sale_time": pendulum.from_timestamp(
                 response["lastSaleTime"] / 1000, tz="America/New_York"
             ).strftime("%Y-%m-%d %H:%M:%S"),
-            "fmp_last": float(response["fmpLast"]),
+            "fmp_last": self.clean_value(response.get("fmpLast", 0.0), float),
             "last_updated": pendulum.from_timestamp(
                 response["lastUpdated"] / 1000, tz="America/New_York"
             ).strftime("%Y-%m-%d %H:%M:%S"),
@@ -277,9 +277,9 @@ class FmpQuote(FmpBase):
         print(response["size"])
 
         data_dict = {
-            "symbol": str(response["symbol"]),
-            "price": float(response["price"]),
-            "size": float(response["size"]),
+            "symbol": self.clean_value(response.get("symbol", ""), str),
+            "price": self.clean_value(response.get("price", 0.0), float),
+            "size": self.clean_value(response.get("size", 0), float),
             "timestamp": pendulum.from_timestamp(
                 response["timestamp"] / 1000, tz="America/New_York"
             ).strftime("%Y-%m-%d %H:%M:%S"),
@@ -315,9 +315,9 @@ class FmpQuote(FmpBase):
             raise ValueError("No data found for the given symbol")
 
         data_dict = {
-            "symbol": str(response["symbol"]),
-            "ask": float(response["ask"]),
-            "bid": float(response["bid"]),
+            "symbol": self.clean_value(response.get("symbol", ""), str),
+            "ask": self.clean_value(response.get("ask", 0.0), float),
+            "bid": self.clean_value(response.get("bid", 0.0), float),
             "timestamp": pendulum.from_timestamp(
                 response["timestamp"], tz="America/New_York"
             ).strftime("%Y-%m-%d %H:%M:%S"),
@@ -432,11 +432,11 @@ class FmpQuote(FmpBase):
         try:
             response = self.get_request(url, params)
             data_dict = {
-                "symbol": str(response["symbol"]),
-                "ask": float(response["ask"]),
-                "bid": float(response["bid"]),
-                "asize": int(response["asize"]),
-                "bsize": int(response["bsize"]),
+                "symbol": self.clean_value(response.get("symbol", ""), str),
+                "ask": self.clean_value(response.get("ask", 0.0), float),
+                "bid": self.clean_value(response.get("bid", 0.0), float),
+                "asize": self.clean_value(response.get("asize", 0), int),
+                "bsize": self.clean_value(response.get("bsize", 0), int),
                 "timestamp": pendulum.from_timestamp(
                     response["timestamp"] / 1000, tz="America/New_York"
                 ).strftime("%Y-%m-%d %H:%M:%S"),
@@ -468,9 +468,9 @@ class FmpQuote(FmpBase):
         try:
             response = self.get_request(url, params)
             data_dict = {
-                "symbol": str(response["symbol"]),
-                "price": float(response["price"]),
-                "size": int(response["size"]),
+                "symbol": self.clean_value(response.get("symbol", ""), str),
+                "price": self.clean_value(response.get("price", 0.0), float),
+                "size": self.clean_value(response.get("size", 0), int),
                 "timestamp": pendulum.from_timestamp(
                     response["timestamp"] / 1000, tz="America/New_York"
                 ).strftime("%Y-%m-%d %H:%M:%S"),
@@ -507,18 +507,18 @@ class FmpQuote(FmpBase):
             raise ValueError(f"No data found for symbol: {symbol}")
 
         return PriceChange(
-            symbol=str(response["symbol"]),
-            day_1=float(response["1D"]),
-            day_5=float(response["5D"]),
-            month_1=float(response["1M"]),
-            month_3=float(response["3M"]),
-            month_6=float(response["6M"]),
-            ytd=float(response["ytd"]),
-            year_1=float(response["1Y"]),
-            year_3=float(response["3Y"]),
-            year_5=float(response["5Y"]),
-            year_10=float(response["10Y"]),
-            max=float(response["max"]),
+            symbol=self.clean_value(response.get("symbol", ""), str),
+            day_1=self.clean_value(response.get("1D", 0.0), float),
+            day_5=self.clean_value(response.get("5D", 0.0), float),
+            month_1=self.clean_value(response.get("1M", 0.0), float),
+            month_3=self.clean_value(response.get("3M", 0.0), float),
+            month_6=self.clean_value(response.get("6M", 0.0), float),
+            ytd=self.clean_value(response.get("YTD", 0.0), float),
+            year_1=self.clean_value(response.get("1Y", 0.0), float),
+            year_3=self.clean_value(response.get("3Y", 0.0), float),
+            year_5=self.clean_value(response.get("5Y", 0.0), float),
+            year_10=self.clean_value(response.get("10Y", 0.0), float),
+            max=self.clean_value(response.get("max", 0.0), float),
         )
 
     ###########################
@@ -628,17 +628,17 @@ class FmpQuote(FmpBase):
             raise ValueError(f"No data found for symbol: {symbol}")
 
         return OtcQuote(
-            prev_close=float(response["prevClose"]),
-            high=float(response["high"]),
-            low=float(response["low"]),
-            open=float(response["open"]),
-            volume=int(response["volume"]),
-            last_sale_price=float(response["lastSalePrice"]),
-            fmp_last=float(response["fmpLast"]),
+            prev_close=self.clean_value(response.get("prevClose", 0.0), float),
+            high=self.clean_value(response.get("high", 0.0), float),
+            low=self.clean_value(response.get("low", 0.0), float),
+            open=self.clean_value(response.get("open", 0.0), float),
+            volume=self.clean_value(response.get("volume", 0), int),
+            last_sale_price=self.clean_value(response.get("lastSalePrice", 0.0), float),
+            fmp_last=self.clean_value(response.get("fmpLast", 0.0), float),
             last_updated=pendulum.parse(response["lastUpdated"]).strftime(
                 "%Y-%m-%d %H:%M:%S"
             ),
-            symbol=str(response["symbol"]),
+            symbol=self.clean_value(response.get("symbol", ""), str),
         )
 
     ###########################
@@ -666,9 +666,9 @@ class FmpQuote(FmpBase):
             raise ValueError(f"Invalid symbol: {symbol}")
 
         return SimpleQuote(
-            symbol=str(response["symbol"]),
-            price=float(response["price"]),
-            volume=int(response["volume"]),
+            symbol=self.clean_value(response.get("symbol", ""), str),
+            price=self.clean_value(response.get("price", 0.0), float),
+            volume=self.clean_value(response.get("volume", 0), int),
         )
 
     ###########################
@@ -726,29 +726,35 @@ class FmpQuote(FmpBase):
             raise ValueError("No data found for the given symbol.")
 
         data_dict = {
-            "symbol": str(response["symbol"]),
-            "name": str(response["name"]),
-            "price": float(response["price"]),
-            "change_percentage": float(response["changesPercentage"]),
-            "change": float(response["change"]),
-            "day_low": float(response["dayLow"]),
-            "day_high": float(response["dayHigh"]),
-            "year_low": float(response["yearLow"]),
-            "year_high": float(response["yearHigh"]),
-            "market_cap": int(response["marketCap"]),
-            "price_avg_50": float(response["priceAvg50"]),
-            "price_avg_200": float(response["priceAvg200"]),
-            "volume": int(response["volume"]),
-            "avg_volume": int(response["avgVolume"]),
-            "exchange": str(response["exchange"]),
-            "open": float(response["open"]),
-            "previous_close": float(response["previousClose"]),
-            "eps": float(response["eps"]),
-            "pe": float(response["pe"]),
+            "symbol": self.clean_value(response.get("symbol", ""), str),
+            "name": self.clean_value(response.get("name", ""), str),
+            "price": self.clean_value(response.get("price", 0.0), float),
+            "change_percentage": self.clean_value(
+                response.get("changePercentage", 0.0), float
+            ),
+            "change": self.clean_value(response.get("change", 0.0), float),
+            "day_low": self.clean_value(response.get("dayLow", 0.0), float),
+            "day_high": self.clean_value(response.get("dayHigh", 0.0), float),
+            "year_low": self.clean_value(response.get("yearLow", 0.0), float),
+            "year_high": self.clean_value(response.get("yearHigh", 0.0), float),
+            "market_cap": self.clean_value(response.get("marketCap", 0), int),
+            "price_avg_50": self.clean_value(response.get("priceAvg50", 0.0), float),
+            "price_avg_200": self.clean_value(response.get("priceAvg200", 0.0), float),
+            "volume": self.clean_value(response.get("volume", 0), int),
+            "avg_volume": self.clean_value(response.get("avgVolume", 0), int),
+            "exchange": self.clean_value(response.get("exchange", ""), str),
+            "open": self.clean_value(response.get("open", 0.0), float),
+            "previous_close": self.clean_value(
+                response.get("previousClose", 0.0), float
+            ),
+            "eps": self.clean_value(response.get("eps", 0.0), float),
+            "pe": self.clean_value(response.get("pe", 0.0), float),
             "earnings_date": pendulum.parse(response["earningsAnnouncement"]).strftime(
                 "%Y-%m-%d %H:%M:%S"
             ),
-            "shares_outstanding": int(response["sharesOutstanding"]),
+            "shares_outstanding": self.clean_value(
+                response.get("sharesOutstanding", 0), int
+            ),
             "timestamp": pendulum.from_timestamp(response["timestamp"]).strftime(
                 "%Y-%m-%d %H:%M:%S"
             ),

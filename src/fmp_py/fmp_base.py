@@ -24,6 +24,18 @@ class FmpBase:
         self.api_key = api_key
         self.session = requests.Session()
 
+    def clean_value(self, value, type) -> Any:
+        if type is int:
+            return int(value) if value else int(0)
+        elif type is float:
+            return float(value) if value else float(0.0)
+        elif type is str:
+            return str(value) if value else str("")
+        elif type is bool:
+            return bool(value) if value else bool(False)
+        else:
+            return value
+
     def get_request(self, url: str, params: Dict[str, Any] = None) -> Dict[str, Any]:
         """
         Make a GET request to the specified URL with the given parameters.

@@ -422,26 +422,43 @@ class FmpCompanyInformation(FmpBase):
         url = "v4/company-core-information"
         params = {"symbol": symbol, "apikey": self.api_key}
 
-        response = self.get_request(url=url, params=params)
+        try:
+            response: dict = self.get_request(url=url, params=params)[0]
+        except IndexError:
+            raise ValueError("No data found for the given symbol.")
 
         if not response:
             raise ValueError("No data found for the given symbol.")
 
-        return CompanyCoreInfo(
-            cik=response[0].get("cik", ""),
-            symbol=response[0].get("symbol", ""),
-            exchange=response[0].get("exchange", ""),
-            sic_code=response[0].get("sicCode", ""),
-            sic_group=response[0].get("sicGroup", ""),
-            sic_description=response[0].get("sicDescription", ""),
-            state_location=response[0].get("stateLocation", ""),
-            state_of_incorporation=response[0].get("stateOfIncorporation", ""),
-            fiscal_year_end=response[0].get("fiscalYearEnd", ""),
-            business_address=response[0].get("businessAddress", ""),
-            mailing_address=response[0].get("mailingAddress", ""),
-            tax_idenfication_number=response[0].get("taxIdentificationNumber", ""),
-            registrant_name=response[0].get("registrantName", ""),
-        )
+        data_dict = {
+            "cik": self.clean_value(response.get("cik", ""), str),
+            "symbol": self.clean_value(response.get("symbol", ""), str),
+            "exchange": self.clean_value(response.get("exchange", ""), str),
+            "sic_code": self.clean_value(response.get("sicCode", ""), str),
+            "sic_group": self.clean_value(response.get("sicGroup", ""), str),
+            "sic_description": self.clean_value(
+                response.get("sicDescription", ""), str
+            ),
+            "state_location": self.clean_value(response.get("stateLocation", ""), str),
+            "state_of_incorporation": self.clean_value(
+                response.get("stateOfIncorporation", ""), str
+            ),
+            "fiscal_year_end": self.clean_value(response.get("fiscalYearEnd", ""), str),
+            "business_address": self.clean_value(
+                response.get("businessAddress", ""), str
+            ),
+            "mailing_address": self.clean_value(
+                response.get("mailingAddress", ""), str
+            ),
+            "tax_idenfication_number": self.clean_value(
+                response.get("taxIdentificationNumber", ""), str
+            ),
+            "registrant_name": self.clean_value(
+                response.get("registrantName", ""), str
+            ),
+        }
+
+        return CompanyCoreInfo(**data_dict)
 
     ############################
     # Market Capitalization
@@ -463,16 +480,21 @@ class FmpCompanyInformation(FmpBase):
         url = f"v3/market-capitalization/{symbol}"
         params = {"apikey": self.api_key}
 
-        response = self.get_request(url=url, params=params)
+        try:
+            response: dict = self.get_request(url=url, params=params)[0]
+        except IndexError:
+            raise ValueError("No data found for the given symbol.")
 
         if not response:
             raise ValueError("No data found for the given symbol.")
 
-        return CompanyMarketCap(
-            symbol=response[0].get("symbol", ""),
-            market_cap=response[0].get("marketCap", 0.0),
-            date=response[0].get("date", ""),
-        )
+        data_dict = {
+            "symbol": self.clean_value(response.get("symbol", ""), str),
+            "market_cap": self.clean_value(response.get("marketCap", 0.0), int),
+            "date": self.clean_value(response.get("date", ""), str),
+        }
+
+        return CompanyMarketCap(**data_dict)
 
     ############################
     # Executives
@@ -832,48 +854,56 @@ class FmpCompanyInformation(FmpBase):
         """
         url = f"v3/company/profile/{symbol}"
         params = {"apikey": self.api_key}
-        response = self.get_request(url=url, params=params)
+        response: dict = self.get_request(url=url, params=params)
 
         if not response:
             raise ValueError("No company profile found for the given symbol.")
 
         data = response.get("profile", {})
 
-        return CompanyProfile(
-            symbol=symbol.upper(),
-            price=float(data.get("price", 0.0)),
-            beta=float(data.get("beta", 0.0)),
-            vol_avg=int(data.get("volAvg", 0)),
-            mkt_cap=int(data.get("mktCap", 0)),
-            last_div=int(data.get("lastDiv", 0)),
-            range=data.get("range", ""),
-            changes=float(data.get("changes", 0.0)),
-            company_name=data.get("companyName", ""),
-            currency=data.get("currency", ""),
-            cik=data.get("cik", ""),
-            isin=data.get("isin", ""),
-            cusip=data.get("cusip", ""),
-            exchange=data.get("exchange", ""),
-            exchange_short_name=data.get("exchangeShortName", ""),
-            industry=data.get("industry", ""),
-            website=data.get("website", ""),
-            description=data.get("description", ""),
-            ceo=data.get("ceo", ""),
-            sector=data.get("sector", ""),
-            country=data.get("country", ""),
-            full_time_employees=int(data.get("fullTimeEmployees", 0)),
-            phone=data.get("phone", ""),
-            address=data.get("address", ""),
-            city=data.get("city", ""),
-            state=data.get("state", ""),
-            zip=data.get("zip", ""),
-            dcf_diff=float(data.get("dcfDiff", 0.0)),
-            dcf=float(data.get("dcf", 0.0)),
-            image=data.get("image", ""),
-            ipo_date=data.get("ipoDate", ""),
-            default_image=data.get("defaultImage", False),
-            is_etf=data.get("isEtf", False),
-            is_actively_trading=data.get("isActivelyTrading", False),
-            is_adr=data.get("isAdr", False),
-            is_fund=data.get("isFund", False),
-        )
+        data_dict = {
+            "symbol": self.clean_value(data.get("symbol", ""), str),
+            "price": self.clean_value(data.get("price", 0.0), float),
+            "beta": self.clean_value(data.get("beta", 0.0), float),
+            "vol_avg": self.clean_value(data.get("volAvg", 0), int),
+            "mkt_cap": self.clean_value(data.get("mktCap", 0), int),
+            "last_div": self.clean_value(data.get("lastDiv", 0), int),
+            "range": self.clean_value(data.get("range", ""), str),
+            "changes": self.clean_value(data.get("changes", 0.0), float),
+            "company_name": self.clean_value(data.get("companyName", ""), str),
+            "currency": self.clean_value(data.get("currency", ""), str),
+            "cik": self.clean_value(data.get("cik", ""), str),
+            "isin": self.clean_value(data.get("isin", ""), str),
+            "cusip": self.clean_value(data.get("cusip", ""), str),
+            "exchange": self.clean_value(data.get("exchange", ""), str),
+            "exchange_short_name": self.clean_value(
+                data.get("exchangeShortName", ""), str
+            ),
+            "industry": self.clean_value(data.get("industry", ""), str),
+            "website": self.clean_value(data.get("website", ""), str),
+            "description": self.clean_value(data.get("description", ""), str),
+            "ceo": self.clean_value(data.get("ceo", ""), str),
+            "sector": self.clean_value(data.get("sector", ""), str),
+            "country": self.clean_value(data.get("country", ""), str),
+            "full_time_employees": self.clean_value(
+                data.get("fullTimeEmployees", 0), int
+            ),
+            "phone": self.clean_value(data.get("phone", ""), str),
+            "address": self.clean_value(data.get("address", ""), str),
+            "city": self.clean_value(data.get("city", ""), str),
+            "state": self.clean_value(data.get("state", ""), str),
+            "zip": self.clean_value(data.get("zip", ""), str),
+            "dcf_diff": self.clean_value(data.get("dcfDiff", 0.0), float),
+            "dcf": self.clean_value(data.get("dcf", 0.0), float),
+            "image": self.clean_value(data.get("image", ""), str),
+            "ipo_date": self.clean_value(data.get("ipoDate", ""), str),
+            "default_image": self.clean_value(data.get("defaultImage", False), bool),
+            "is_etf": self.clean_value(data.get("isEtf", False), bool),
+            "is_actively_trading": self.clean_value(
+                data.get("isActivelyTrading", False), bool
+            ),
+            "is_adr": self.clean_value(data.get("isAdr", False), bool),
+            "is_fund": self.clean_value(data.get("isFund", False), bool),
+        }
+
+        return CompanyProfile(**data_dict)

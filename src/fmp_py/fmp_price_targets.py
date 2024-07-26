@@ -48,16 +48,18 @@ class FmpPriceTargets(FmpBase):
         params = {"symbol": symbol, "apikey": self.api_key}
 
         try:
-            response = self.get_request(url, params)[0]
+            response: dict = self.get_request(url, params)[0]
         except IndexError:
             raise ValueError("No data found for the specified parameters.")
 
         return PriceTargetConsensus(
-            symbol=str(response.get("symbol", "")),
-            target_high=float(response.get("targetHigh", 0)),
-            target_low=float(response.get("targetLow", 0)),
-            target_consensus=float(response.get("targetConsensus", 0)),
-            target_median=float(response.get("targetMedian", 0)),
+            symbol=self.clean_value(response.get("symbol", ""), str),
+            target_high=self.clean_value(response.get("targetHigh", 0.0), float),
+            target_low=self.clean_value(response.get("targetLow", 0.0), float),
+            target_consensus=self.clean_value(
+                response.get("targetConsensus", 0.0), float
+            ),
+            target_median=self.clean_value(response.get("targetMedian", 0.0), float),
         )
 
     ############################
@@ -68,25 +70,29 @@ class FmpPriceTargets(FmpBase):
         params = {"symbol": symbol, "apikey": self.api_key}
 
         try:
-            response = self.get_request(url, params)[0]
+            response: dict = self.get_request(url, params)[0]
         except IndexError:
             raise ValueError("No data found for the specified parameters.")
 
         return PriceTargetSummary(
-            symbol=str(response.get("symbol", "")),
-            last_month=int(response.get("lastMonth", 0)),
-            last_month_avg_price_target=float(
-                response.get("lastMonthAvgPriceTarget", 0)
+            symbol=self.clean_value(response.get("symbol", ""), str),
+            last_month=self.clean_value(response.get("lastMonth", 0), int),
+            last_month_avg_price_target=self.clean_value(
+                response.get("lastMonthAvgPriceTarget", 0.0), float
             ),
-            last_quarter=int(response.get("lastQuarter", 0)),
-            last_quarter_avg_price_target=float(
-                response.get("lastQuarterAvgPriceTarget", 0)
+            last_quarter=self.clean_value(response.get("lastQuarter", 0), int),
+            last_quarter_avg_price_target=self.clean_value(
+                response.get("lastQuarterAvgPriceTarget", 0.0), float
             ),
-            last_year=int(response.get("lastYear", 0)),
-            last_year_avg_price_target=float(response.get("lastYearAvgPriceTarget", 0)),
-            all_time=int(response.get("allTime", 0)),
-            all_time_avg_price_target=float(response.get("allTimeAvgPriceTarget", 0)),
-            publishers=json.loads(response.get("publishers", [])),
+            last_year=self.clean_value(response.get("lastYear", 0), int),
+            last_year_avg_price_target=self.clean_value(
+                response.get("lastYearAvgPriceTarget", 0.0), float
+            ),
+            all_time=self.clean_value(response.get("allTime", 0), int),
+            all_time_avg_price_target=self.clean_value(
+                response.get("allTimeAvgPriceTarget", 0.0), float
+            ),
+            publishers=json.loads(response["publishers"]),
         )
 
     ############################
