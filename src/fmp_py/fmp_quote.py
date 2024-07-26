@@ -132,14 +132,16 @@ class FmpQuote(FmpBase):
             raise ValueError("Error retrieving data")
 
         data_dict = {
-            "ticker": str(response["ticker"]),
-            "ask": float(response["ask"]),
-            "bid": float(response["bid"]),
-            "open": float(response["open"]),
-            "low": float(response["low"]),
-            "high": float(response["high"]),
-            "changes": float(response["changes"]),
-            "date": pendulum.parse(response["date"]).strftime("%Y-%m-%d %H:%M:%S"),
+            "ticker": str(response.get("ticker", "")),
+            "ask": float(response.get("ask", 0)),
+            "bid": float(response.get("bid", 0)),
+            "open": float(response.get("open", 0)),
+            "low": float(response.get("low", 0)),
+            "high": float(response.get("high", 0)),
+            "changes": float(response.get("changes", 0)),
+            "date": pendulum.parse(
+                response.get("date", "1970-01-01 00:00:00")
+            ).strftime("%Y-%m-%d %H:%M:%S"),
         }
 
         return FxPrice(**data_dict)

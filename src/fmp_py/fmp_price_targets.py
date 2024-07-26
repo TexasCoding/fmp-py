@@ -53,11 +53,11 @@ class FmpPriceTargets(FmpBase):
             raise ValueError("No data found for the specified parameters.")
 
         return PriceTargetConsensus(
-            symbol=str(response["symbol"]),
-            target_high=float(response["targetHigh"]),
-            target_low=float(response["targetLow"]),
-            target_consensus=float(response["targetConsensus"]),
-            target_median=float(response["targetMedian"]),
+            symbol=str(response.get("symbol", "")),
+            target_high=float(response.get("targetHigh", 0)),
+            target_low=float(response.get("targetLow", 0)),
+            target_consensus=float(response.get("targetConsensus", 0)),
+            target_median=float(response.get("targetMedian", 0)),
         )
 
     ############################
@@ -73,16 +73,20 @@ class FmpPriceTargets(FmpBase):
             raise ValueError("No data found for the specified parameters.")
 
         return PriceTargetSummary(
-            symbol=str(response["symbol"]),
-            last_month=int(response["lastMonth"]),
-            last_month_avg_price_target=float(response["lastMonthAvgPriceTarget"]),
-            last_quarter=int(response["lastQuarter"]),
-            last_quarter_avg_price_target=float(response["lastQuarterAvgPriceTarget"]),
-            last_year=int(response["lastYear"]),
-            last_year_avg_price_target=float(response["lastYearAvgPriceTarget"]),
-            all_time=int(response["allTime"]),
-            all_time_avg_price_target=float(response["allTimeAvgPriceTarget"]),
-            publishers=json.loads(response["publishers"]),
+            symbol=str(response.get("symbol", "")),
+            last_month=int(response.get("lastMonth", 0)),
+            last_month_avg_price_target=float(
+                response.get("lastMonthAvgPriceTarget", 0)
+            ),
+            last_quarter=int(response.get("lastQuarter", 0)),
+            last_quarter_avg_price_target=float(
+                response.get("lastQuarterAvgPriceTarget", 0)
+            ),
+            last_year=int(response.get("lastYear", 0)),
+            last_year_avg_price_target=float(response.get("lastYearAvgPriceTarget", 0)),
+            all_time=int(response.get("allTime", 0)),
+            all_time_avg_price_target=float(response.get("allTimeAvgPriceTarget", 0)),
+            publishers=json.loads(response.get("publishers", [])),
         )
 
     ############################

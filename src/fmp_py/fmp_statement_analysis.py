@@ -657,16 +657,16 @@ class FmpStatementAnalysis(FmpBase):
             raise ValueError("Invalid symbol")
 
         data_dict = {
-            "symbol": str(response["symbol"]),
-            "altman_z_score": float(response.get("altmanZScore", 0)),
-            "piotroski_score": int(response.get("piotroskiScore", 0)),
-            "working_capital": int(response.get("workingCapital", 0)),
-            "total_assets": int(response.get("totalAssets", 0)),
-            "retained_earnings": int(response.get("retainedEarnings", 0)),
-            "ebit": int(response.get("ebit", 0)),
-            "market_cap": int(response.get("marketCap", 0)),
-            "total_liabilities": int(response.get("totalLiabilities", 0)),
-            "revenue": int(response.get("revenue", 0)),
+            "symbol": response["symbol"],
+            "altman_z_score": response.get("altmanZScore", 0),
+            "piotroski_score": response.get("piotroskiScore", 0),
+            "working_capital": response.get("workingCapital", 0),
+            "total_assets": response.get("totalAssets", 0),
+            "retained_earnings": response.get("retainedEarnings", 0),
+            "ebit": response.get("ebit", 0),
+            "market_cap": response.get("marketCap", 0),
+            "total_liabilities": response.get("totalLiabilities", 0),
+            "revenue": response.get("revenue", 0),
         }
 
         return FinancialScore(**data_dict)
