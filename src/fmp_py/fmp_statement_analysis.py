@@ -658,15 +658,15 @@ class FmpStatementAnalysis(FmpBase):
 
         data_dict = {
             "symbol": str(response["symbol"]),
-            "altman_z_score": float(response["altmanZScore"]),
-            "piotroski_score": int(response["piotroskiScore"]),
-            "working_capital": int(response["workingCapital"]),
-            "total_assets": int(response["totalAssets"]),
-            "retained_earnings": int(response["retainedEarnings"]),
-            "ebit": int(response["ebit"]),
-            "market_cap": int(response["marketCap"]),
-            "total_liabilities": int(response["totalLiabilities"]),
-            "revenue": int(response["revenue"]),
+            "altman_z_score": float(response.get("altmanZScore", 0)),
+            "piotroski_score": int(response.get("piotroskiScore", 0)),
+            "working_capital": int(response.get("workingCapital", 0)),
+            "total_assets": int(response.get("totalAssets", 0)),
+            "retained_earnings": int(response.get("retainedEarnings", 0)),
+            "ebit": int(response.get("ebit", 0)),
+            "market_cap": int(response.get("marketCap", 0)),
+            "total_liabilities": int(response.get("totalLiabilities", 0)),
+            "revenue": int(response.get("revenue", 0)),
         }
 
         return FinancialScore(**data_dict)
