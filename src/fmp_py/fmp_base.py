@@ -1,5 +1,8 @@
 import os
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util import Retry
+
 from dotenv import load_dotenv
 from typing import Dict, Any
 
@@ -22,7 +25,18 @@ class FmpBase:
                 "API Key is required. Set it as environment variable 'FMP_API_KEY' or pass it directly."
             )
         self.api_key = api_key
+
+        status_forcelist = [429, 500, 502, 503, 504]
+
+        self.retry_strategy = Retry(
+            total=3,
+            backoff_factor=2.0,
+            status_forcelist=status_forcelist,
+        )
+        self.adapter = HTTPAdapter(max_retries=self.retry_strategy)
         self.session = requests.Session()
+        self.session.mount("https://", self.adapter)
+        self.session.mount("http://", self.adapter)
 
     def clean_value(self, value, type) -> Any:
         if type is int:
