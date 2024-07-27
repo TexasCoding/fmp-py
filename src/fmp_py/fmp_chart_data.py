@@ -6,13 +6,23 @@ from dotenv import load_dotenv
 from fmp_py.fmp_historical_data import FmpHistoricalData
 from ta.trend import SMAIndicator, EMAIndicator, WMAIndicator, ADXIndicator
 from ta.momentum import RSIIndicator
-from ta.volume import VolumeWeightedAveragePrice, MFIIndicator, AccDistIndexIndicator
+from ta.volume import (
+    VolumeWeightedAveragePrice,
+    MFIIndicator,
+    AccDistIndexIndicator,
+    OnBalanceVolumeIndicator,
+    ChaikinMoneyFlowIndicator,
+    ForceIndexIndicator,
+    EaseOfMovementIndicator,
+    VolumePriceTrendIndicator,
+    NegativeVolumeIndexIndicator,
+)
 from ta.volatility import AverageTrueRange, BollingerBands
 
 load_dotenv()
 
 
-class FmpCharts(FmpBase):
+class FmpChartData(FmpBase):
     def __init__(
         self,
         symbol: str,
@@ -29,6 +39,234 @@ class FmpCharts(FmpBase):
     ##########################################################################
     ########################### VOLUME INDICATORS ############################
     ##########################################################################
+
+    ####################################
+    # Negative Volume Index Indicator
+    ####################################
+    def nvi(self) -> None:
+        """
+        Calculates the Negative Volume Index (NVI) for the chart data.
+
+        The Negative Volume Index (NVI) is a technical indicator that uses volume to predict
+        changes in stock prices. It is calculated by summing the percentage changes in price
+        on days with declining volume and subtracting the sum of the percentage changes on
+        days with increasing volume.
+
+        This method modifies the `chart` attribute of the object by adding a new column
+        called "nvi" that contains the NVI values.
+
+        Returns:
+            None
+
+        Example:
+            >>> fmp = FmpCharts(symbol="AAPL", from_date="2021-01-01", to_date="2021-01-10")
+            >>> fmp.nvi()
+            >>> print(fmp.return_chart())
+        """
+        chart = self.chart.copy()
+        chart["nvi"] = (
+            NegativeVolumeIndexIndicator(
+                close=chart["close"], volume=chart["volume"], fillna=True
+            )
+            .negative_volume_index()
+            .round(2)
+            .astype(float)
+        )
+        self.chart = chart
+
+    ####################################
+    # Volume Price Trend Indicator
+    ####################################
+    def vpt(self) -> None:
+        """
+        Calculates the Volume Price Trend (VPT) indicator for the chart data.
+
+        The Volume Price Trend (VPT) indicator measures the strength of a price trend by
+        analyzing the relationship between volume and price. It is used to identify
+        potential reversals or confirm the strength of a trend.
+
+        This method modifies the `chart` attribute of the object by adding a new column
+        called "vpt" that contains the calculated VPT values.
+
+        Returns:
+            None
+
+        Example:
+            >>> fmp = FmpCharts(symbol="AAPL", from_date="2021-01-01", to_date="2021-01-10")
+            >>> fmp.vpt()
+            >>> print(fmp.return_chart())
+        """
+        chart = self.chart.copy()
+        chart["vpt"] = (
+            VolumePriceTrendIndicator(
+                close=chart["close"],
+                volume=chart["volume"],
+                fillna=True,
+            ).volume_price_trend()
+        ).astype(int)
+        self.chart = chart
+
+    ####################################
+    # SMA Ease of Movement Indicator
+    ####################################
+    def sma_eom(self, period: int = 14) -> None:
+        """
+        Calculates the Simple Moving Average (SMA) of the Ease of Movement (EOM) indicator.
+
+        Args:
+            period (int): The number of periods to consider for calculating the SMA. Default is 14.
+
+        Returns:
+            None
+
+        """
+        chart = self.chart.copy()
+        chart[f"sma_eom{period}"] = (
+            EaseOfMovementIndicator(
+                high=chart["high"],
+                low=chart["low"],
+                volume=chart["volume"],
+                window=period,
+                fillna=True,
+            )
+            .sma_ease_of_movement()
+            .round(2)
+            .astype(float)
+        )
+
+        self.chart = chart
+
+    ##################################
+    # Ease of Movement Indicator
+    ##################################
+    def eom(self, period: int = 14) -> None:
+        """
+        Calculates the Ease of Movement (EOM) indicator for the given chart data.
+
+        Parameters:
+            period (int): The number of periods to consider for the EOM calculation. Default is 14.
+
+        Returns:
+            None
+
+        Notes:
+            - The EOM indicator measures the relationship between price change and volume.
+            - It helps identify potential price reversals and divergences.
+
+        Example:
+            >>> fmp = FmpCharts(symbol="AAPL", from_date="2021-01-01", to_date="2021-01-10")
+            >>> fmp.eom(14)
+            >>> print(fmp.return_chart())
+        """
+        chart = self.chart.copy()
+        chart[f"eom{period}"] = (
+            EaseOfMovementIndicator(
+                high=chart["high"],
+                low=chart["low"],
+                volume=chart["volume"],
+                window=period,
+                fillna=True,
+            )
+            .ease_of_movement()
+            .round(2)
+            .astype(float)
+        )
+
+        self.chart = chart
+
+    ##################################
+    # Force Index Indicator
+    ##################################
+    def fi(self, period: int = 13) -> None:
+        """
+        Calculates and adds the Force Index (FI) to the chart data.
+
+        The Force Index is a technical indicator that measures the force behind price movements based on the combination of
+        price change and trading volume. It helps identify strong trends and potential reversals.
+
+        Args:
+            period (int, optional): The period used to calculate the Force Index. Defaults to 13.
+
+        Returns:
+            None
+
+        Example:
+            >>> fmp = FmpCharts(symbol="AAPL", from_date="2021-01-01", to_date="2021-01-10")
+            >>> fmp.fi(13)
+            >>> print(fmp.return_chart())
+        """
+        chart = self.chart.copy()
+        chart[f"fi{period}"] = (
+            ForceIndexIndicator(
+                close=chart["close"], volume=chart["volume"], window=period
+            )
+            .force_index()
+            .round(2)
+        ).astype(float)
+        self.chart = chart
+
+    #################################
+    # Chaikin Money Flow Indicator
+    #################################
+    def cmf(self, period: int = 20) -> None:
+        """
+        Calculates the Chaikin Money Flow (CMF) indicator for the chart data.
+
+        Args:
+            period (int): The number of periods to consider for the CMF calculation. Default is 20.
+
+        Returns:
+            None. The CMF values are added as a new column 'cmf' to the chart data.
+
+        Example:
+            >>> fmp = FmpCharts(symbol="AAPL", from_date="2021-01-01", to_date="2021-01-10")
+            >>> fmp.cmf()
+            >>> print(fmp.return_chart())
+        """
+        chart = self.chart.copy()
+        chart["cmf"] = (
+            ChaikinMoneyFlowIndicator(
+                high=chart["high"],
+                low=chart["low"],
+                close=chart["close"],
+                volume=chart["volume"],
+                window=period,
+                fillna=True,
+            )
+            .chaikin_money_flow()
+            .round(2)
+        ).astype(float)
+
+        self.chart = chart
+
+    #################################
+    # On Balance Volume Indicator
+    #################################
+    def obv(self) -> None:
+        """
+        Calculates the On-Balance Volume (OBV) indicator for the chart data.
+
+        The On-Balance Volume (OBV) indicator measures the cumulative buying and selling pressure based on the volume of trades.
+        It is used to identify the strength of a trend and potential reversals.
+
+        Returns:
+            None
+
+        Example:
+            >>> fmp = FmpCharts(symbol="AAPL", from_date="2021-01-01", to_date="2021-01-10")
+            >>> fmp.obv()
+            >>> print(fmp.return_chart())
+        """
+        chart = self.chart.copy()
+        chart["obv"] = (
+            OnBalanceVolumeIndicator(
+                close=chart["close"],
+                volume=chart["volume"],
+                fillna=True,
+            ).on_balance_volume()
+        ).astype(int)
+
+        self.chart = chart
 
     #################################
     # Accumulated Distribution Index
@@ -389,7 +627,8 @@ class FmpCharts(FmpBase):
             )
             .adx_neg()
             .round(2)
-        ).astype(float)
+            .astype(float)
+        )
 
         chart[f"adx{period}_pos"] = (
             ADXIndicator(
