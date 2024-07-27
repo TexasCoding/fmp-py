@@ -67,7 +67,7 @@ class FmpHistoricalData(FmpBase):
         Returns:
             pd.DataFrame: A DataFrame containing the intraday historical data for the specified symbol and time interval.
         """
-        interval_options = ["1min", "5min", "15min", "30min", "1hour", "4hour"]
+        interval_options = ["1min", "5min", "15min", "30min", "1hour", "4hour", "1day"]
         if interval not in interval_options:
             raise ValueError(f"Interval must be one of: {interval_options}")
 
@@ -94,7 +94,7 @@ class FmpHistoricalData(FmpBase):
         Returns:
             pd.DataFrame: Prepared data.
         """
-        data_df["vwap"] = self._calc_vwap(data_df)
+        # data_df["vwap"] = self._calc_vwap(data_df)
         data_df = data_df.astype(
             {
                 "date": "datetime64[ns]",
@@ -103,7 +103,7 @@ class FmpHistoricalData(FmpBase):
                 "low": "float",
                 "close": "float",
                 "volume": "int64",
-                "vwap": "float",
+                # "vwap": "float",
             }
         )
         return self._round_prices(data_df)
