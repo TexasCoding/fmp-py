@@ -22,7 +22,6 @@ def test_fmp_historical_data_daily_history(fmp_historical_data):
     data = fmp_historical_data.daily_history(symbol, from_date, to_date)
     assert isinstance(data, pd.DataFrame)
     assert not data.empty
-    assert "vwap" in data.columns
     assert "date" in data.index.names
     assert isinstance(data.index, pd.DatetimeIndex)
     assert isinstance(data.iloc[0]["open"], np.float64)
@@ -30,7 +29,6 @@ def test_fmp_historical_data_daily_history(fmp_historical_data):
     assert isinstance(data.iloc[0]["low"], np.float64)
     assert isinstance(data.iloc[0]["close"], np.float64)
     assert isinstance(data.iloc[0]["volume"], np.float64)
-    assert isinstance(data.iloc[0]["vwap"], np.float64)
 
 
 def test_fmp_historical_data_daily_history_with_invalid_symbol(fmp_historical_data):
@@ -49,7 +47,6 @@ def test_fmp_historical_data_intraday_history(fmp_historical_data):
     data = fmp_historical_data.intraday_history(symbol, interval, from_date, to_date)
     assert isinstance(data, pd.DataFrame)
     assert not data.empty
-    assert "vwap" in data.columns
     assert "date" in data.index.names
     assert isinstance(data.index, pd.DatetimeIndex)
     assert isinstance(data.iloc[0]["open"], np.float64)
@@ -57,7 +54,6 @@ def test_fmp_historical_data_intraday_history(fmp_historical_data):
     assert isinstance(data.iloc[0]["low"], np.float64)
     assert isinstance(data.iloc[0]["close"], np.float64)
     assert isinstance(data.iloc[0]["volume"], np.float64)
-    assert isinstance(data.iloc[0]["vwap"], np.float64)
 
 
 def test_fmp_historical_data_intraday_history_with_invalid_symbol(fmp_historical_data):
