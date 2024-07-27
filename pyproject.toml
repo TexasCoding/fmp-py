@@ -1,11 +1,7 @@
 [tool.poetry]
 name = "fmp-py"
-<<<<<<< HEAD
-version = "0.0.13.5"
-=======
 version = "0.0.13.6"
->>>>>>> de8057a92db6dfc1f59968e525788e543f1b5a1c
-description = ""
+description = "Python package for Financial Modeling Prep API"
 authors = ["TexasCoding <jeff10278@me.com>"]
 readme = "README.md"
 
