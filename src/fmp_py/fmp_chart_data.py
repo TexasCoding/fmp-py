@@ -4,8 +4,36 @@ import os
 from dotenv import load_dotenv
 
 from fmp_py.fmp_historical_data import FmpHistoricalData
-from ta.trend import SMAIndicator, EMAIndicator, WMAIndicator, ADXIndicator
-from ta.momentum import RSIIndicator
+from ta.trend import (
+    SMAIndicator,
+    EMAIndicator,
+    WMAIndicator,
+    ADXIndicator,
+    MACD,
+    VortexIndicator,
+    TRIXIndicator,
+    MassIndex,
+    CCIIndicator,
+    DPOIndicator,
+    KSTIndicator,
+    # IchimokuIndicator,
+    # PSARIndicator,
+    # STCIndicator,
+    # AroonIndicator,
+)
+from ta.momentum import (
+    RSIIndicator,
+    # StochRSIIndicator,
+    # StochasticOscillator,
+    # TSIIndicator,
+    # UltimateOscillator,
+    # WilliamsRIndicator,
+    # AwesomeOscillatorIndicator,
+    # KAMAIndicator,
+    # ROCIndicator,
+    # PercentagePriceOscillator,
+    # PercentageVolumeOscillator,
+)
 from ta.volume import (
     VolumeWeightedAveragePrice,
     MFIIndicator,
@@ -17,7 +45,13 @@ from ta.volume import (
     VolumePriceTrendIndicator,
     NegativeVolumeIndexIndicator,
 )
-from ta.volatility import AverageTrueRange, BollingerBands
+from ta.volatility import (
+    AverageTrueRange,
+    BollingerBands,
+    # KeltnerChannel,
+    # DonchianChannel,
+    # UlcerIndex,
+)
 
 load_dotenv()
 
@@ -517,6 +551,341 @@ class FmpChartData(FmpBase):
     ##########################################################################
     ########################## TREND INDICATORS ##############################
     ##########################################################################
+
+    #####################################
+    # KST Oscillator (KST)
+    #####################################
+    def kst(
+        self,
+        roc1: int = 10,
+        roc2: int = 15,
+        roc3: int = 20,
+        roc4: int = 30,
+        window1: int = 10,
+        window2: int = 10,
+        window3: int = 10,
+        window4: int = 15,
+        nsig: int = 9,
+    ) -> None:
+        """
+        Calculates the Know Sure Thing (KST) indicator and adds it to the chart data.
+
+        Parameters:
+        - roc1 (int): Rate of Change (ROC) for the first time period (default: 10)
+        - roc2 (int): Rate of Change (ROC) for the second time period (default: 15)
+        - roc3 (int): Rate of Change (ROC) for the third time period (default: 20)
+        - roc4 (int): Rate of Change (ROC) for the fourth time period (default: 30)
+        - window1 (int): Moving average window for the first time period (default: 10)
+        - window2 (int): Moving average window for the second time period (default: 10)
+        - window3 (int): Moving average window for the third time period (default: 10)
+        - window4 (int): Moving average window for the fourth time period (default: 15)
+        - nsig (int): Signal line window (default: 9)
+
+        Returns:
+        None
+
+        Notes:
+            - The KST indicator is a momentum oscillator that measures the strength of a trend.
+            - The KST indicator is commonly used to identify overbought and oversold conditions.
+
+        Example:
+            >>> fmp = FmpCharts(symbol="AAPL", from_date="2021-01-01", to_date="2021-01-10")
+            >>> fmp.kst(10, 15, 20, 30, 10, 10, 10, 15, 9)
+            >>> print(fmp.return_chart())
+        """
+        chart = self.chart.copy()
+
+        chart["kst"] = (
+            KSTIndicator(
+                close=chart["close"],
+                roc1=roc1,
+                roc2=roc2,
+                roc3=roc3,
+                roc4=roc4,
+                window1=window1,
+                window2=window2,
+                window3=window3,
+                window4=window4,
+                nsig=nsig,
+                fillna=True,
+            )
+            .kst()
+            .round(2)
+            .astype(float)
+        )
+
+        chart["kst_sig"] = (
+            KSTIndicator(
+                close=chart["close"],
+                roc1=roc1,
+                roc2=roc2,
+                roc3=roc3,
+                roc4=roc4,
+                window1=window1,
+                window2=window2,
+                window3=window3,
+                window4=window4,
+                nsig=nsig,
+                fillna=True,
+            )
+            .kst_sig()
+            .round(2)
+            .astype(float)
+        )
+        self.chart = chart
+
+    ######################################
+    # Detrended Price Oscillator (DPO)
+    ######################################
+    def dpo(self, period: int = 20) -> None:
+        """
+        Calculates the Detrended Price Oscillator (DPO) for the given period.
+
+        Parameters:
+        - period (int): The number of periods to consider for the calculation. Default is 20.
+
+        Returns:
+        None
+
+        Notes:
+            - The DPO is a momentum indicator that measures the difference between the close price and the previous close price.
+            - The DPO is commonly used to determine the strength of a trend.
+
+        Example:
+            >>> fmp = FmpCharts(symbol="AAPL", from_date="2021-01-01", to_date="2021-01-10")
+            >>> fmp.dpo(20)
+            >>> print(fmp.return_chart())
+        """
+        chart = self.chart.copy()
+        chart[f"dpo{period}"] = (
+            DPOIndicator(
+                close=chart["close"],
+                window=period,
+                fillna=True,
+            )
+            .dpo()
+            .round(2)
+            .astype(float)
+        )
+        self.chart = chart
+
+    ######################################
+    # Commodity Channel Index (CCI)
+    ######################################
+    def cci(self, period: int = 20, constant: float = 0.015) -> None:
+        """
+        Calculates the Commodity Channel Index (CCI) for the given period and constant.
+
+        Parameters:
+            period (int): The number of periods to consider for calculating CCI. Default is 20.
+            constant (float): The constant multiplier used in the CCI formula. Default is 0.015.
+
+        Returns:
+            None
+
+        Notes:
+            - The CCI is a momentum-based oscillator that measures the deviation of an asset's price from its statistical mean.
+            - The CCI is used to identify overbought and oversold levels, as well as potential trend reversals.
+
+        Example:
+            >>> fmp = FmpCharts(symbol="AAPL", from_date="2021-01-01", to_date="2021-01-10")
+            >>> fmp.cci(14, 0.015)
+            >>> print(fmp.return_chart())
+        """
+        chart = self.chart.copy()
+        chart[f"cci{period}"] = (
+            CCIIndicator(
+                high=chart["high"],
+                low=chart["low"],
+                close=chart["close"],
+                window=period,
+                constant=constant,
+                fillna=True,
+            )
+            .cci()
+            .round(2)
+            .astype(float)
+        )
+
+        self.chart = chart
+
+    ######################################
+    # Mass Index (MI) Indicator
+    ######################################
+    def mi(self, period_fast: int = 9, period_slow: int = 25) -> None:
+        """
+        Calculates the Mass Index (MI) for the chart data.
+
+        The Mass Index is a technical indicator used to identify potential reversals in the market.
+        It is calculated based on the high and low prices of the chart data.
+
+        Parameters:
+            period_fast (int): The number of periods to use for the fast EMA calculation. Default is 9.
+            period_slow (int): The number of periods to use for the slow EMA calculation. Default is 25.
+
+        Returns:
+            None
+
+        Notes:
+            - The Mass Index is a trend following momentum indicator that uses the high and low price to identify trend reversals based on range expansions.
+            - The Mass Index is calculated by using the high and low price to calculate the range of the chart data.
+            - The Mass Index is typically used with a 9-day and 25-day EMA.
+
+        Example:
+            >>> fmp = FmpCharts(symbol="AAPL", from_date="2021-01-01", to_date="2021-01-10")
+            >>> fmp.mi(9, 25)
+            >>> print(fmp.return_chart())
+
+        """
+        chart = self.chart.copy()
+        chart["mi"] = (
+            MassIndex(
+                high=chart["high"],
+                low=chart["low"],
+                window_slow=period_slow,
+                window_fast=period_fast,
+                fillna=True,
+            )
+            .mass_index()
+            .round(2)
+            .astype(float)
+        )
+
+        self.chart = chart
+
+    #####################################
+    # Triple Exponential Moving Average
+    #####################################
+    def trix(self, period: int = 15) -> None:
+        """
+        Calculate the TRIX (Triple Exponential Moving Average) indicator for the given period.
+
+        Args:
+            period (int): The number of periods to consider for the TRIX calculation. Default is 15.
+
+        Returns:
+            None
+
+        Notes:
+            - The TRIX indicator is a momentum indicator that shows the speed and direction of price changes.
+            - The TRIX indicator is commonly used to identify overbought and oversold conditions.
+            - The TRIX indicator is a multiplicative indicator, which means that the TRIX value is multiplied by the close price.
+
+        Example:
+            >>> fmp = FmpCharts(symbol="AAPL", from_date="2021-01-01", to_date="2021-01-10")
+            >>> fmp.trix(14)
+            >>> print(fmp.return_chart())
+        """
+        chart = self.chart.copy()
+        chart[f"trix{period}"] = (
+            TRIXIndicator(
+                close=chart["close"],
+                window=period,
+                fillna=True,
+            )
+            .trix()
+            .round(2)
+            .astype(float)
+        )
+
+        self.chart = chart
+
+    #####################################
+    # Vortex Indicator
+    #####################################
+    def vi(self, period: int = 14) -> None:
+        """
+        Calculates the Vortex Indicator (VI) for the given period and updates the chart data.
+
+        Parameters:
+        - period (int): The number of periods to consider when calculating the VI. Default is 14.
+
+        Returns:
+        None
+
+        Example:
+        >>> fmp = FmpCharts(symbol="AAPL", from_date="2021-01-01", to_date="2021-01-10")
+        >>> fmp.vi(14)
+        >>> print(fmp.return_chart())
+        """
+        chart = self.chart.copy()
+        chart[f"vi{period}"] = (
+            VortexIndicator(
+                high=chart["high"],
+                low=chart["low"],
+                close=chart["close"],
+                window=period,
+                fillna=True,
+            )
+            .vortex_indicator_diff()
+            .round(2)
+            .astype(float)
+        )
+        self.chart = chart
+
+    #####################################
+    # MACD
+    #####################################
+    def macd(self, fast: int = 12, slow: int = 26, signal: int = 9) -> None:
+        """
+        Calculate the Moving Average Convergence Divergence (MACD) indicators for the chart data.
+
+        Args:
+            fast (int): The number of periods for the fast moving average. Default is 12.
+            slow (int): The number of periods for the slow moving average. Default is 26.
+            signal (int): The number of periods for the signal line. Default is 9.
+
+        Returns:
+            None
+
+        This method calculates the MACD, MACD signal line, and MACD histogram (MACD difference) for the chart data.
+        The calculated values are added as new columns to the chart DataFrame.
+
+        Example:
+            >>> fmp = FmpCharts(symbol="AAPL", from_date="2021-01-01", to_date="2021-01-10")
+            >>> fmp.macd(12, 26, 9)
+            >>> print(fmp.return_chart())
+        """
+        chart = self.chart.copy()
+        chart["macd"] = (
+            MACD(
+                close=chart["close"],
+                window_fast=fast,
+                window_slow=slow,
+                window_sign=signal,
+                fillna=True,
+            )
+            .macd()
+            .round(2)
+            .astype(float)
+        )
+        chart["macd_signal"] = (
+            MACD(
+                close=chart["close"],
+                window_fast=fast,
+                window_slow=slow,
+                window_sign=signal,
+                fillna=True,
+            )
+            .macd_signal()
+            .round(2)
+            .astype(float)
+        )
+
+        chart["macd_diff"] = (
+            MACD(
+                close=chart["close"],
+                window_fast=fast,
+                window_slow=slow,
+                window_sign=signal,
+                fillna=True,
+            )
+            .macd_diff()
+            .round(2)
+            .astype(float)
+        )
+
+        self.chart = chart
 
     #####################################
     # Waddah Attar Explosion
