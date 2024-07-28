@@ -433,7 +433,8 @@ class FmpChartData(FmpBase):
         """
         chart = self.chart.copy()
 
-        chart[f"bb_h{period}"] = (
+        # Bollinger Channel High Band
+        chart["bb_hband"] = (
             BollingerBands(
                 close=chart["close"],
                 window=period,
@@ -444,7 +445,8 @@ class FmpChartData(FmpBase):
             .round(2)
         ).astype(float)
 
-        chart[f"bb_m{period}"] = (
+        # Bollinger Channel Middle Band
+        chart["bb_mband"] = (
             BollingerBands(
                 close=chart["close"],
                 window=period,
@@ -455,7 +457,8 @@ class FmpChartData(FmpBase):
             .round(2)
         ).astype(float)
 
-        chart[f"bb_l{period}"] = (
+        # Bollinger Channel Low Band
+        chart[f"bb_lband{period}"] = (
             BollingerBands(
                 close=chart["close"],
                 window=period,
@@ -466,7 +469,9 @@ class FmpChartData(FmpBase):
             .round(2)
         ).astype(float)
 
-        chart[f"bb_h{period}_ind"] = (
+        # Bollinger Channel Indicator Crossing High Band (binary).
+        # It returns 1, if close is higher than bollinger_hband. Else, it returns 0.
+        chart["bb_hband_ind"] = (
             BollingerBands(
                 close=chart["close"],
                 window=period,
@@ -477,7 +482,9 @@ class FmpChartData(FmpBase):
             .astype(int)
         )
 
-        chart[f"bb_l{period}_ind"] = (
+        # Bollinger Channel Indicator Crossing Low Band (binary).
+        # It returns 1, if close is lower than bollinger_lband. Else, it returns 0.
+        chart["bb_lband_ind"] = (
             BollingerBands(
                 close=chart["close"],
                 window=period,
@@ -488,7 +495,8 @@ class FmpChartData(FmpBase):
             .astype(int)
         )
 
-        chart[f"bb_w{period}"] = (
+        # Bollinger Channel Band Width
+        chart["bb_wband"] = (
             BollingerBands(
                 close=chart["close"],
                 window=period,
@@ -499,7 +507,8 @@ class FmpChartData(FmpBase):
             .round(2)
         ).astype(float)
 
-        chart[f"bb_p{period}"] = (
+        # Bollinger Channel Percentage Band
+        chart["bb_pband"] = (
             BollingerBands(
                 close=chart["close"],
                 window=period,
@@ -1101,7 +1110,7 @@ class FmpChartData(FmpBase):
         self.chart = chart
 
     ##########################################################################
-    ########################## TREND INDICATORS ##############################
+    ######################## Momentum INDICATORS #############################
     ##########################################################################
 
     #####################################
