@@ -60,7 +60,10 @@ class FmpEarnings(FmpBase):
         )
 
     def next_earnings_date(self, symbol: str, weeks_ahead: int = 2) -> bool:
-        earnings_history = self.earnings_historical(symbol).tail(5)
+        try:
+            earnings_history = self.earnings_historical(symbol)
+        except ValueError:
+            return False
 
         todays_date = pd.to_datetime(pendulum.today().to_date_string())
         future_date = pd.to_datetime(
@@ -69,8 +72,6 @@ class FmpEarnings(FmpBase):
 
         earnings_history = earnings_history[earnings_history["date"] >= todays_date]
         earnings_history = earnings_history[earnings_history["date"] <= future_date]
-
-        print(earnings_history)
 
         if earnings_history.empty:
             return False
