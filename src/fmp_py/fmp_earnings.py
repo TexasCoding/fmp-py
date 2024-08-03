@@ -1,6 +1,7 @@
 import pandas as pd
 from fmp_py.fmp_base import FmpBase
 import os
+import pendulum
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -57,3 +58,21 @@ class FmpEarnings(FmpBase):
             )
             .sort_values(by="date", ascending=True)
         )
+
+    def next_earnings_date(self, symbol: str, weeks_ahead: int = 2) -> bool:
+        earnings_history = self.earnings_historical(symbol).tail(5)
+
+        todays_date = pd.to_datetime(pendulum.today().to_date_string())
+        future_date = pd.to_datetime(
+            pendulum.today().add(weeks=weeks_ahead).to_date_string()
+        )
+
+        earnings_history = earnings_history[earnings_history["date"] >= todays_date]
+        earnings_history = earnings_history[earnings_history["date"] <= future_date]
+
+        print(earnings_history)
+
+        if earnings_history.empty:
+            return False
+
+        return True
