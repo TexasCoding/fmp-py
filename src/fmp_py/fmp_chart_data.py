@@ -458,7 +458,7 @@ class FmpChartData(FmpBase):
         ).astype(float)
 
         # Bollinger Channel Low Band
-        chart[f"bb_lband{period}"] = (
+        chart["bb_lband"] = (
             BollingerBands(
                 close=chart["close"],
                 window=period,

@@ -61,13 +61,13 @@ def test_fmp_chart_data_bb(fmp):
     fmp.bb(20, 2)
     fmp_chart = fmp.return_chart()
     assert isinstance(fmp_chart, pd.DataFrame)
-    assert "bb_h20" in fmp_chart.columns
-    assert "bb_l20" in fmp_chart.columns
-    assert "bb_m20" in fmp_chart.columns
-    assert "bb_w20" in fmp_chart.columns
-    assert "bb_p20" in fmp_chart.columns
-    assert "bb_h20_ind" in fmp_chart.columns
-    assert "bb_l20_ind" in fmp_chart.columns
+    assert "bb_hband" in fmp_chart.columns
+    assert "bb_lband" in fmp_chart.columns
+    assert "bb_mband" in fmp_chart.columns
+    assert "bb_wband" in fmp_chart.columns
+    assert "bb_pband" in fmp_chart.columns
+    assert "bb_hband_ind" in fmp_chart.columns
+    assert "bb_lband_ind" in fmp_chart.columns
 
 
 def test_fmp_chart_data_mfi(fmp):
