@@ -3,7 +3,6 @@ import pandas as pd
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
-
 from dotenv import load_dotenv
 from typing import Dict, Any
 

@@ -6,7 +6,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-pd.set_option('future.no_silent_downcasting', True)
+pd.set_option("future.no_silent_downcasting", True)
+
 
 """
 This module provides functions to retrieve earnings data from the Financial Modeling Prep API.
@@ -52,9 +53,10 @@ class FmpEarnings(FmpBase):
         if not response:
             raise ValueError("Error fetching earnings surprises data")
 
-        return (
+        data_df = (
             (
                 pd.DataFrame(response)
+                .fillna(0)
                 .rename(
                     columns={
                         "symbol": "symbol",
@@ -63,7 +65,6 @@ class FmpEarnings(FmpBase):
                         "estimatedEarning": "estimated_earning",
                     }
                 )
-                .fillna(0)
                 .astype(
                     {
                         "symbol": "string",
@@ -76,6 +77,8 @@ class FmpEarnings(FmpBase):
             .sort_values(by="date", ascending=True)
             .reset_index(drop=True)
         )
+
+        return data_df
 
     #############################
     # Earnings Confirmed
@@ -111,9 +114,10 @@ class FmpEarnings(FmpBase):
         if not response:
             raise ValueError("Error fetching earnings calendar data")
 
-        return (
+        data_df = (
             (
                 pd.DataFrame(response)
+                .fillna(0)
                 .rename(
                     columns={
                         "symbol": "symbol",
@@ -126,7 +130,6 @@ class FmpEarnings(FmpBase):
                         "url": "url",
                     }
                 )
-                .fillna(0)
                 .astype(
                     {
                         "symbol": "string",
@@ -143,6 +146,8 @@ class FmpEarnings(FmpBase):
             .sort_values(by="date", ascending=True)
             .reset_index(drop=True)
         )
+
+        return data_df
 
     #############################
     # Earnings Calendar
@@ -180,8 +185,9 @@ class FmpEarnings(FmpBase):
         if not response:
             raise ValueError("Error fetching earnings calendar data")
 
-        return (
+        data_df = (
             pd.DataFrame(response)
+            .fillna(0)
             .rename(
                 columns={
                     "date": "date",
@@ -195,16 +201,15 @@ class FmpEarnings(FmpBase):
                     "updatedFromDate": "updated_from_date",
                 }
             )
-            .fillna(0)
             .astype(
                 {
                     "date": "datetime64[ns]",
                     "symbol": "string",
-                    "eps": "float64",
-                    "eps_estimated": "float64",
+                    "eps": "float",
+                    "eps_estimated": "float",
                     "time": "string",
-                    "revenue": "int64",
-                    "revenue_estimated": "int64",
+                    "revenue": "int",
+                    "revenue_estimated": "int",
                     "fiscal_date_ending": "datetime64[ns]",
                     "updated_from_date": "datetime64[ns]",
                 }
@@ -212,6 +217,8 @@ class FmpEarnings(FmpBase):
             .sort_values(by="date", ascending=True)
             .reset_index(drop=True)
         )
+
+        return data_df
 
     #############################
     # Earnings Historical
@@ -242,8 +249,9 @@ class FmpEarnings(FmpBase):
         if not response:
             raise ValueError("Error fetching earnings historical data")
 
-        return (
+        data_df = (
             pd.DataFrame(response)
+            .fillna(0)
             .rename(
                 columns={
                     "date": "date",
@@ -257,7 +265,6 @@ class FmpEarnings(FmpBase):
                     "fiscalDateEnding": "fiscal_date_ending",
                 }
             )
-            .fillna(0)
             .astype(
                 {
                     "date": "datetime64[ns]",
@@ -268,10 +275,13 @@ class FmpEarnings(FmpBase):
                     "revenue": "int",
                     "eps_estimated": "float",
                     "revenue_estimated": "int",
-                }
+                },
+                errors="ignore",
             )
             .sort_values(by="date", ascending=True)
         )
+
+        return data_df
 
     #############################
     # Earnings Within Weeks
