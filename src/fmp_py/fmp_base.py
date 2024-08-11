@@ -1,4 +1,5 @@
 import os
+import pandas as pd
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
@@ -37,6 +38,16 @@ class FmpBase:
         self.session = requests.Session()
         self.session.mount("https://", self.adapter)
         self.session.mount("http://", self.adapter)
+
+    def fill_na(self, df: pd.DataFrame) -> pd.DataFrame:
+        for col in df:
+            dt = df[col].dtype
+            if dt is int or dt is float:
+                df[col].fillna(0, inplace=True)
+            else:
+                df[col].fillna("", inplace=True)
+
+        return df
 
     def clean_value(self, value, type) -> Any:
         if type is int:

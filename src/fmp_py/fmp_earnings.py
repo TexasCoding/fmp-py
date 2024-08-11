@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+pd.set_option('future.no_silent_downcasting', True)
+
 """
 This module provides functions to retrieve earnings data from the Financial Modeling Prep API.
 References:
