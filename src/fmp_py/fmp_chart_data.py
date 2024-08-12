@@ -23,14 +23,14 @@ from ta.trend import (
 )
 from ta.momentum import (
     RSIIndicator,
-    # StochRSIIndicator,
-    # StochasticOscillator,
-    # TSIIndicator,
-    # UltimateOscillator,
-    # WilliamsRIndicator,
-    # AwesomeOscillatorIndicator,
-    # KAMAIndicator,
-    # ROCIndicator,
+    StochRSIIndicator,
+    StochasticOscillator,
+    TSIIndicator,
+    UltimateOscillator,
+    WilliamsRIndicator,
+    AwesomeOscillatorIndicator,
+    KAMAIndicator,
+    ROCIndicator,
     # PercentagePriceOscillator,
     # PercentageVolumeOscillator,
 )
@@ -1131,13 +1131,319 @@ class FmpChartData(FmpBase):
             >>> fmp.rsi(14)
             >>> print(fmp.return_chart())
         """
-        change = self.chart.copy()
-        change[f"rsi{period}"] = (
-            RSIIndicator(close=change["close"], window=period, fillna=True)
+        chart = self.chart.copy()
+        chart[f"rsi{period}"] = (
+            RSIIndicator(close=chart["close"], window=period, fillna=True)
             .rsi()
             .round(2)
         ).astype(float)
-        self.chart = change
+        self.chart = chart
+
+    #####################################
+    # Stochastic RSI
+    #####################################
+    def srsi(self, period: int = 14, smooth1: int = 3, smooth2: int = 3) -> None:
+        """
+        Calculates the Stochastic RSI (Relative Strength Index) for the given period.
+        Parameters:
+            period (int): The number of periods to consider for the calculation. Default is 14.
+            smooth1 (int): The number of periods to use for smoothing the Stochastic RSI. Default is 3.
+            smooth2 (int): The number of periods to use for smoothing the Stochastic RSI's signal line. Default is 3.
+        Returns:
+            None
+        """
+
+        chart = self.chart.copy()
+        chart[f"srsi{period}"] = (
+            StochRSIIndicator(
+                close=chart["close"],
+                window=period,
+                smooth1=smooth1,
+                smooth2=smooth2,
+                fillna=True,
+            )
+            .stochrsi()
+            .round(2)
+        ).astype(float)
+
+        chart[f"srsi{period}_d"] = (
+            StochRSIIndicator(
+                close=chart["close"],
+                window=period,
+                smooth1=smooth1,
+                smooth2=smooth2,
+                fillna=True,
+            )
+            .stochrsi_d()
+            .round(2)
+        ).astype(float)
+
+        chart[f"srsi{period}_k"] = (
+            StochRSIIndicator(
+                close=chart["close"],
+                window=period,
+                smooth1=smooth1,
+                smooth2=smooth2,
+                fillna=True,
+            )
+            .stochrsi_k()
+            .round(2)
+        ).astype(float)
+
+        self.chart = chart
+
+    #####################################
+    # Stochastic Oscillator
+    #####################################
+    def stoch(self, period: int = 14, smooth: int = 3) -> None:
+        """
+        Calculates the Stochastic Oscillator for the given period.
+
+        Parameters:
+            period (int): The number of periods to consider for the calculation. Default is 14.
+            smooth (int): The number of periods to use for smoothing the Stochastic Oscillator. Default is 3.
+
+        Returns:
+            None
+
+        Example:
+            >>> fmp = FmpCharts(symbol="AAPL", from_date="2021-01-01", to_date="2021-01-10")
+            >>> fmp.stoch(14, 3)
+            >>> print(fmp.return_chart())
+        """
+        chart = self.chart.copy()
+        chart[f"stoch{period}"] = (
+            StochasticOscillator(
+                high=chart["high"],
+                low=chart["low"],
+                close=chart["close"],
+                window=period,
+                smooth_window=smooth,
+                fillna=True,
+            )
+            .stoch()
+            .round(2)
+        ).astype(float)
+
+        chart[f"stoch{period}_sig"] = (
+            StochasticOscillator(
+                high=chart["high"],
+                low=chart["low"],
+                close=chart["close"],
+                window=period,
+                smooth_window=smooth,
+                fillna=True,
+            )
+            .stoch_signal()
+            .round(2)
+        ).astype(float)
+
+        self.chart = chart
+
+    #####################################
+    # True Strength Index
+    #####################################
+    def tsi(self, period_slow: int = 25, period_fast: int = 13) -> None:
+        """
+        Calculates the True Strength Index (TSI) for the given chart data.
+        Parameters:
+            period_slow (int): The number of periods to use for the slow TSI calculation. Default is 25.
+            period_fast (int): The number of periods to use for the fast TSI calculation. Default is 13.
+        Returns:
+            None
+
+        Example:
+            >>> fmp = FmpCharts(symbol="AAPL", from_date="2021-01-01", to_date="2021-01-10")
+            >>> fmp.tsi(25, 13)
+            >>> print(fmp.return_chart())
+        """
+        chart = self.chart.copy()
+        chart["tsi"] = (
+            TSIIndicator(
+                close=chart["close"],
+                window_slow=period_slow,
+                window_fast=period_fast,
+                fillna=True,
+            )
+            .tsi()
+            .round(2)
+        ).astype(float)
+
+        self.chart = chart
+
+    #####################################
+    # Ultimate Oscillator
+    #####################################
+    def uo(
+        self,
+        period1: int = 7,
+        period2: int = 14,
+        period3: int = 28,
+        weight1: float = 4.0,
+        weight2: float = 2.0,
+        weight3: float = 1.0,
+    ) -> None:
+        """
+        Calculate the Ultimate Oscillator (UO) for the given chart data.
+        Parameters:
+            period1 (int): The number of periods to use for the first UO calculation. Default is 7.
+            period2 (int): The number of periods to use for the second UO calculation. Default is 14.
+            period3 (int): The number of periods to use for the third UO calculation. Default is 28.
+            weight1 (float): The weight to apply to the first UO calculation. Default is 4.0.
+            weight2 (float): The weight to apply to the second UO calculation. Default is 2.0.
+            weight3 (float): The weight to apply to the third UO calculation. Default is 1.0.
+        Returns:
+            None
+
+        Example:
+            >>> fmp = FmpCharts(symbol="AAPL", from_date="2021-01-01", to_date="2021-01-10")
+            >>> fmp.uo(7, 14, 28, 4.0, 2.0, 1.0)
+            >>> print(fmp.return
+        """
+        chart = self.chart.copy()
+        chart["uo"] = (
+            UltimateOscillator(
+                high=chart["high"],
+                low=chart["low"],
+                close=chart["close"],
+                window1=period1,
+                window2=period2,
+                window3=period3,
+                weight1=weight1,
+                weight2=weight2,
+                weight3=weight3,
+                fillna=True,
+            )
+            .ultimate_oscillator()
+            .round(2)
+        ).astype(float)
+
+        self.chart = chart
+
+    #####################################
+    # Williams %R
+    #####################################
+    def wr(self, period: int = 14) -> None:
+        """
+        Calculate the Williams %R for the given chart data.
+        Parameters:
+            period (int): The number of periods to consider for the calculation. Default is 14.
+        Returns:
+            None
+
+        Example:
+            >>> fmp = FmpCharts(symbol="AAPL", from_date="2021-01-01", to_date="2021-01-10")
+            >>> fmp.wr(14)
+            >>> print(fmp.return_chart())
+        """
+        chart = self.chart.copy()
+        chart[f"wr{period}"] = (
+            WilliamsRIndicator(
+                high=chart["high"],
+                low=chart["low"],
+                close=chart["close"],
+                lbp=period,
+                fillna=True,
+            )
+            .williams_r()
+            .round(2)
+        ).astype(float)
+
+        self.chart = chart
+
+    ###############################
+    # Awesome Oscillator
+    ###############################
+    def ao(self, period1: int = 5, period2: int = 34) -> None:
+        """
+        Calculate the Awesome Oscillator (AO) for the given chart data.
+        Parameters:
+            period1 (int): The number of periods to use for the first AO calculation. Default is 5.
+            period2 (int): The number of periods to use for the second AO calculation. Default is 34.
+        Returns:
+            None
+
+        Example:
+            >>> fmp = FmpCharts(symbol="AAPL", from_date="2021-01-01", to_date="2021-01-10")
+            >>> fmp.ao(5, 34)
+            >>> print(fmp.return_chart())
+        """
+        chart = self.chart.copy()
+        chart["ao"] = (
+            AwesomeOscillatorIndicator(
+                high=chart["high"],
+                low=chart["low"],
+                window1=period1,
+                window2=period2,
+                fillna=True,
+            )
+            .awesome_oscillator()
+            .round(2)
+        ).astype(float)
+
+        self.chart = chart
+
+    ####################################
+    # Kaufman's Adaptive Moving Average
+    ####################################
+    def kama(self, period: int = 10, pow1: int = 2, pow2: int = 30) -> None:
+        """
+        Calculate the Kaufman's Adaptive Moving Average (KAMA) for the given chart data.
+        Parameters:
+            period (int): The number of periods to consider for the calculation. Default is 10.
+            pow1 (int): The number of periods to consider for the first power factor. Default is 2.
+            pow2 (int): The number of periods to consider for the second power factor. Default is 30.
+        Returns:
+            None
+
+        Example:
+            >>> fmp = FmpCharts(symbol="AAPL", from_date="2021-01-01", to_date="2021-01-10")
+            >>> fmp.kama(10, 2, 30)
+            >>> print(fmp.return_chart
+        """
+        chart = self.chart.copy()
+        chart[f"kama{period}"] = (
+            KAMAIndicator(
+                close=chart["close"],
+                window=period,
+                pow1=pow1,
+                pow2=pow2,
+                fillna=True,
+            )
+            .kama()
+            .round(2)
+        ).astype(float)
+
+        self.chart = chart
+
+    #####################################
+    # Rate of Change (ROC)
+    #####################################
+    def roc(self, period: int = 12) -> None:
+        """
+        Calculate the Rate of Change (ROC) for the given chart data.
+        Parameters:
+            period (int): The number of periods to consider for the calculation. Default is 12.
+        Returns:
+            None
+
+        Example:
+            >>> fmp = FmpCharts(symbol="AAPL", from_date="2021-01-01", to_date="2021-01-10")
+            >>> fmp.roc(12)
+            >>> print(fmp.return_chart())
+        """
+        chart = self.chart.copy()
+        chart[f"roc{period}"] = (
+            ROCIndicator(
+                close=chart["close"],
+                window=period,
+                fillna=True,
+            )
+            .roc()
+            .round(2)
+        ).astype(float)
+
+        self.chart = chart
 
     def return_chart(self) -> pd.DataFrame:
         return self.chart

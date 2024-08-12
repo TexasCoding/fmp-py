@@ -75,3 +75,62 @@ def test_fmp_chart_data_mfi(fmp):
     fmp_chart = fmp.return_chart()
     assert isinstance(fmp_chart, pd.DataFrame)
     assert "mfi14" in fmp_chart.columns
+
+
+def test_fmp_chart_data_ao(fmp):
+    fmp.ao()
+    fmp_chart = fmp.return_chart()
+    assert isinstance(fmp_chart, pd.DataFrame)
+    assert "ao" in fmp_chart.columns
+
+
+def test_fmp_chart_data_wr(fmp):
+    fmp.wr(14)
+    fmp_chart = fmp.return_chart()
+    assert isinstance(fmp_chart, pd.DataFrame)
+    assert "wr14" in fmp_chart.columns
+
+
+def test_fmp_chart_data_uo(fmp):
+    fmp.uo()
+    fmp_chart = fmp.return_chart()
+    assert isinstance(fmp_chart, pd.DataFrame)
+    assert "uo" in fmp_chart.columns
+
+
+def test_fmp_chart_data_tsi(fmp):
+    fmp.tsi(25, 13)
+    fmp_chart = fmp.return_chart()
+    assert isinstance(fmp_chart, pd.DataFrame)
+    assert "tsi" in fmp_chart.columns
+
+
+def test_fmp_chart_data_stoch(fmp):
+    fmp.stoch(14)
+    fmp_chart = fmp.return_chart()
+    assert isinstance(fmp_chart, pd.DataFrame)
+    assert "stoch14" in fmp_chart.columns
+    assert "stoch14_sig" in fmp_chart.columns
+
+
+def test_fmp_chart_data_srsi(fmp):
+    fmp.srsi(14)
+    fmp_chart = fmp.return_chart()
+    assert isinstance(fmp_chart, pd.DataFrame)
+    assert "srsi14" in fmp_chart.columns
+    assert "srsi14_d" in fmp_chart.columns
+    assert "srsi14_k" in fmp_chart.columns
+
+
+def test_fmp_chart_data_roc(fmp):
+    fmp.roc(12)
+    fmp_chart = fmp.return_chart()
+    assert isinstance(fmp_chart, pd.DataFrame)
+    assert "roc12" in fmp_chart.columns
+
+
+def test_fmp_chart_data_kama(fmp):
+    fmp.kama(10)
+    fmp_chart = fmp.return_chart()
+    assert isinstance(fmp_chart, pd.DataFrame)
+    assert "kama10" in fmp_chart.columns
