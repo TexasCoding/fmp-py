@@ -1,3 +1,4 @@
+import pendulum
 from fmp_py.fmp_base import FmpBase
 import pandas as pd
 import os
@@ -9,6 +10,228 @@ load_dotenv()
 class FmpForex(FmpBase):
     def __init__(self, api_key: str = os.getenv("FMP_API_KEY")) -> None:
         super().__init__(api_key)
+
+    ####################
+    # Forex Daily
+    ####################
+    def forex_daily(self, symbol: str) -> pd.DataFrame:
+        """
+        Retrieves daily forex data for a given symbol.
+        Args:
+            symbol (str): The symbol for the forex pair.
+        Returns:
+            pd.DataFrame: A DataFrame containing the historical daily forex data.
+        Raises:
+            ValueError: If no data is found for the given symbol.
+        """
+
+        clean_symbol = symbol.replace("/", "")
+        url = f"v3/historical-price-full/{clean_symbol}"
+
+        try:
+            response = self.get_request(url)["historical"]
+        except KeyError:
+            raise ValueError(f"No data found for {symbol}")
+
+        if not response:
+            raise ValueError(f"No data found for {symbol}")
+
+        data_df = (
+            pd.DataFrame(response)
+            .fillna(0)
+            .rename(
+                columns={
+                    "date": "date",
+                    "open": "open",
+                    "high": "high",
+                    "low": "low",
+                    "close": "close",
+                    "adjClose": "adj_close",
+                    "volume": "volume",
+                    "unadjustedVolume": "unadjusted_volume",
+                    "change": "change",
+                    "changePercent": "change_percent",
+                    "vwap": "vwap",
+                    "label": "label",
+                    "changeOverTime": "change_over_time",
+                }
+            )
+            .astype(
+                {
+                    "date": "datetime64[ns]",
+                    "open": "float",
+                    "high": "float",
+                    "low": "float",
+                    "close": "float",
+                    "adj_close": "float",
+                    "volume": "int",
+                    "unadjusted_volume": "int",
+                    "change": "float",
+                    "change_percent": "float",
+                    "vwap": "float",
+                    "label": "str",
+                    "change_over_time": "float",
+                }
+            )
+        )
+
+        return data_df
+
+    ####################
+    # Intraday Forex Quote
+    ####################
+    def intraday_forex_quote(
+        self, symbol: str, interval: str, from_date: str, to_date: str
+    ) -> pd.DataFrame:
+        """
+        Retrieves intraday forex quotes for a given symbol within a specified time interval.
+        Args:
+            symbol (str): The symbol of the forex pair.
+            interval (str): The time interval for the quotes. Must be one of: 1min, 5min, 15min, 30min, 1hour, 4hour, 1day, 1week, 1month.
+            from_date (str): The starting date for the quotes in the format "YYYY-MM-DD".
+            to_date (str): The ending date for the quotes in the format "YYYY-MM-DD".
+        Returns:
+            pd.DataFrame: A DataFrame containing the intraday forex quotes with the following columns:
+                - date: The date and time of the quote.
+                - open: The opening price of the forex pair.
+                - high: The highest price of the forex pair during the interval.
+                - low: The lowest price of the forex pair during the interval.
+                - close: The closing price of the forex pair.
+                - volume: The trading volume during the interval.
+        Raises:
+            ValueError: If the from_date is greater than the to_date.
+            ValueError: If an invalid interval is provided.
+            ValueError: If no data is found for the given symbol.
+        """
+
+        from_date = pendulum.parse(from_date).format("YYYY-MM-DD")
+        to_date = pendulum.parse(to_date).format("YYYY-MM-DD")
+        if from_date > to_date:
+            raise ValueError("from_date must be less than or equal to to_date")
+
+        clean_symbol = symbol.replace("/", "")
+
+        if interval not in [
+            "1min",
+            "5min",
+            "15min",
+            "30min",
+            "1hour",
+            "4hour",
+            "1day",
+            "1week",
+            "1month",
+        ]:
+            raise ValueError(
+                "Invalid interval. Please choose from: 1min, 5min, 15min, 30min, 1hour, 4hour, 1day, 1week, 1month"
+            )
+
+        url = f"v3/historical-chart/{interval}/{clean_symbol}"
+        params = {"from": from_date, "to": to_date}
+
+        response = self.get_request(url, params=params)
+
+        if not response:
+            raise ValueError(f"No data found for {symbol}")
+
+        data_df = (
+            pd.DataFrame(response)
+            .fillna(0)
+            .astype(
+                {
+                    "date": "datetime64[ns]",
+                    "open": "float",
+                    "high": "float",
+                    "low": "float",
+                    "close": "float",
+                    "volume": "int",
+                }
+            )
+        )
+
+        return data_df
+
+    ####################
+    # Full Forex Quote
+    ####################
+    def full_forex_quote(self, symbol: str) -> pd.DataFrame:
+        """
+        Retrieves the full forex quote for a given symbol.
+        Args:
+            symbol (str): The symbol for the forex quote.
+        Returns:
+            pd.DataFrame: A DataFrame containing the full forex quote data.
+        Raises:
+            ValueError: If no data is found for the given symbol.
+        """
+
+        clean_symbol = symbol.replace("/", "")
+        url = f"v3/quote/{clean_symbol}"
+
+        response = self.get_request(url)
+
+        if not response:
+            raise ValueError(f"No data found for {symbol}")
+
+        data_df = (
+            pd.DataFrame(response)
+            .fillna(0)
+            .rename(
+                columns={
+                    "symbol": "symbol",
+                    "name": "name",
+                    "price": "price",
+                    "changesPercentage": "changes_percentage",
+                    "change": "change",
+                    "dayLow": "day_low",
+                    "dayHigh": "day_high",
+                    "yearHigh": "year_high",
+                    "yearLow": "year_low",
+                    "marketCap": "market_cap",
+                    "priceAvg50": "price_avg_50",
+                    "priceAvg200": "price_avg_200",
+                    "exhange": "exchange",
+                    "volume": "volume",
+                    "avgVolume": "avg_volume",
+                    "open": "open",
+                    "previousClose": "previous_close",
+                    "eps": "eps",
+                    "pe": "pe",
+                    "earningsAnnouncement": "earnings_announcement",
+                    "sharesOutstanding": "shares_outstanding",
+                    "timestamp": "timestamp",
+                }
+            )
+            .astype(
+                {
+                    "symbol": "str",
+                    "name": "str",
+                    "price": "float",
+                    "changes_percentage": "float",
+                    "change": "float",
+                    "day_low": "float",
+                    "day_high": "float",
+                    "year_high": "float",
+                    "year_low": "float",
+                    "market_cap": "int",
+                    "price_avg_50": "float",
+                    "price_avg_200": "float",
+                    "exchange": "str",
+                    "volume": "int",
+                    "avg_volume": "int",
+                    "open": "float",
+                    "previous_close": "float",
+                    "eps": "float",
+                    "pe": "float",
+                    "earnings_announcement": "str",
+                    "shares_outstanding": "int",
+                }
+            )
+        )
+
+        data_df["timestamp"] = pd.to_datetime(data_df["timestamp"], unit="s")
+
+        return data_df
 
     ####################
     # Forex List
