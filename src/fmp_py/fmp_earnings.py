@@ -298,18 +298,18 @@ class FmpEarnings(FmpBase):
 
         try:
             earnings_history = self.earnings_historical(symbol)
+
+            todays_date = pd.to_datetime(pendulum.today().to_date_string())
+            future_date = pd.to_datetime(
+                pendulum.today().add(weeks=weeks_ahead).to_date_string()
+            )
+
+            earnings_history = earnings_history[earnings_history["date"] >= todays_date]
+            earnings_history = earnings_history[earnings_history["date"] <= future_date]
+
+            if earnings_history.empty:
+                return False
         except ValueError:
-            return False
-
-        todays_date = pd.to_datetime(pendulum.today().to_date_string())
-        future_date = pd.to_datetime(
-            pendulum.today().add(weeks=weeks_ahead).to_date_string()
-        )
-
-        earnings_history = earnings_history[earnings_history["date"] >= todays_date]
-        earnings_history = earnings_history[earnings_history["date"] <= future_date]
-
-        if earnings_history.empty:
             return False
 
         return True
