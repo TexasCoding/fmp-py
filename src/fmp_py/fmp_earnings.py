@@ -309,6 +309,7 @@ class FmpEarnings(FmpBase):
 
             if earnings_history.empty:
                 return False
+
         except ValueError:
             return False
 

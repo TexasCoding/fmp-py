@@ -562,6 +562,70 @@ class FmpChartData(FmpBase):
     ##########################################################################
 
     #####################################
+    # BXTRender Indicator
+    #####################################
+    def bxtrender(
+        self,
+        short_p1: int = 5,
+        short_p2: int = 20,
+        short_p3: int = 15,
+        long_p1: int = 20,
+        long_p2: int = 15,
+    ) -> None:
+        """
+        Calculates the BXTrend indicator for the given chart data.
+
+        Parameters:
+            short_p1 (int): The window size for the first short-term EMA calculation. Default is 5.
+            short_p2 (int): The window size for the second short-term EMA calculation. Default is 20.
+            short_p3 (int): The window size for the RSI calculation. Default is 15.
+            long_p1 (int): The window size for the long-term EMA calculation. Default is 20.
+            long_p2 (int): The window size for the RSI calculation. Default is 15.
+
+        Returns:
+            None
+        """
+        chart = self.chart.copy()
+        chart["short_term_xtrender"] = (
+            RSIIndicator(
+                (
+                    EMAIndicator(close=chart["close"], window=short_p1).ema_indicator()
+                    - EMAIndicator(
+                        close=chart["close"], window=short_p2
+                    ).ema_indicator()
+                ),
+                window=short_p3,
+            ).rsi()
+            - 50
+        )
+
+        chart["long_term_xtrender"] = (
+            RSIIndicator(
+                EMAIndicator(close=chart["close"], window=long_p1).ema_indicator(),
+                window=long_p2,
+            ).rsi()
+            - 50
+        )
+
+        def t3(src, length):
+            xe1_1 = EMAIndicator(src, length).ema_indicator()
+            xe2_1 = EMAIndicator(xe1_1, length).ema_indicator()
+            xe3_1 = EMAIndicator(xe2_1, length).ema_indicator()
+            xe4_1 = EMAIndicator(xe3_1, length).ema_indicator()
+            xe5_1 = EMAIndicator(xe4_1, length).ema_indicator()
+            xe6_1 = EMAIndicator(xe5_1, length).ema_indicator()
+            b_1 = 0.7
+            c1_1 = -b_1 * b_1 * b_1
+            c2_1 = 3 * b_1 * b_1 + 3 * b_1 * b_1 * b_1
+            c3_1 = -6 * b_1 * b_1 - 3 * b_1 - 3 * b_1 * b_1 * b_1
+            c4_1 = 1 + 3 * b_1 + b_1 * b_1 * b_1 + 3 * b_1 * b_1
+            return c1_1 * xe6_1 + c2_1 * xe5_1 + c3_1 * xe4_1 + c4_1 * xe3_1
+
+        chart["ma_short_term_trend"] = t3(chart["close"], 5)
+
+        self.chart = chart.dropna()
+
+    #####################################
     # KST Oscillator (KST)
     #####################################
     def kst(
